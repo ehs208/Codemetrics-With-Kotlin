@@ -18,10 +18,6 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 - **Using IDE built-in plugin system**:  
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "CodeMetrics With Kotlin"</kbd> > <kbd>Install</kbd>
 
-- **Manual installation**:  
-  Download the [latest release](https://github.com/ehs208/codemetrics-idea/releases/latest) and install via  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
 ## Configuration
 <kbd>Settings/Preferences</kbd> > <kbd>Code Metrics</kbd> to customize:
 - Complexity thresholds for different colors
