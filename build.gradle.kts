@@ -6,7 +6,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.10"
-    id("org.jetbrains.intellij") version "1.16.0"
+    id("org.jetbrains.intellij") version "1.17.4"
     id("org.jetbrains.changelog") version "2.2.0"
 }
 
@@ -21,12 +21,18 @@ kotlin {
     jvmToolchain(17)
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 intellij {
     pluginName.set(properties("pluginName"))
-    version.set(properties("platformVersion"))
+    version.set("2024.2.1")
     type.set(properties("platformType"))
 
     plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+    updateSinceUntilBuild.set(false)
 }
 
 changelog {
@@ -41,9 +47,7 @@ tasks {
 
     patchPluginXml {
         version.set(properties("pluginVersion"))
-        sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
-
+        sinceBuild.set("242")
         pluginDescription.set(
             file("README.md").readText().lines().run {
                 val start = "<!-- Plugin description -->"
@@ -66,12 +70,6 @@ tasks {
                 )
             }
         })
-    }
-
-    signPlugin {
-        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
-        privateKey.set(System.getenv("PRIVATE_KEY"))
-        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
     }
 
     publishPlugin {

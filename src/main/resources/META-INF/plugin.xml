@@ -1,25 +1,22 @@
 <idea-plugin>
   <id>com.github.ehs208.codemetrics-kt</id>
   <name>CodeMetrics With Kotlin</name>
-  <version>0.1.0</version>
+
   <vendor email="ehs208@naver.com" url="https://github.com/ehs208">
     ehs208 (based on CodeMetrics by Tamas Kisst)
   </vendor>
 
-  <description><![CDATA[
-    CodeMetrics plugin provides real-time cyclomatic complexity metrics for Java and Kotlin code.
-    ]]></description>
-
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.kotlin</depends>
+
+  <extensions defaultExtensionNs="org.jetbrains.kotlin">
+    <supportsKotlinPluginMode>ALL</supportsKotlinPluginMode>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceImplementation="com.github.ehs208.codemetrics.core.config.MetricsConfiguration" />
     <applicationConfigurable instance="com.github.ehs208.codemetrics.configuration.EditorConfig"/>
   </extensions>
-
-  <application-components>
-  </application-components>
 
   <project-components>
     <component>
@@ -29,8 +26,4 @@
       <implementation-class>com.github.ehs208.codemetrics.inlay.InlayManager</implementation-class>
     </component>
   </project-components>
-
-  <actions>
-  </actions>
-
 </idea-plugin>
