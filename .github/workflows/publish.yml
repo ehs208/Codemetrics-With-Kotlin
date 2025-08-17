@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - "v*"   # 예: v1.0.0 같은 태그일 때 실행
+      - "v*"
 
 jobs:
   publish:
@@ -15,9 +15,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Set version from tag
-        run: ./gradlew setVersionFromTag
 
       - name: Build & Verify
         run: ./gradlew build --no-daemon

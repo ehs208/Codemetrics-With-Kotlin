@@ -12,8 +12,14 @@ plugins {
 
 group = properties("pluginGroup")
 
-// 기본값 (SNAPSHOT) → GitHub Actions에서 태그 기반으로 override
-version = properties("pluginVersion")
+val tag = System.getenv("GITHUB_REF_NAME")
+version = if (tag != null && tag.startsWith("v")) {
+    tag.removePrefix("v")
+        .also { println("🔖 Version set from tag: $it") }
+} else {
+    properties("pluginVersion")
+        .also { println("📦 Version set from gradle.properties: $it") }
+}
 
 repositories {
     mavenCentral()
@@ -84,19 +90,8 @@ tasks {
         gradleVersion = properties("gradleVersion")
     }
 
-    register("setVersionFromTag") {
-        doLast {
-            val tag = System.getenv("GITHUB_REF_NAME")
-            if (tag != null && tag.startsWith("v")) {
-                project.version = tag.removePrefix("v")
-                println("🔖 Version set from tag: $version")
-            }
-        }
-    }
-
     publishPlugin {
         dependsOn("patchChangelog")
-        dependsOn("setVersionFromTag")
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 }
