@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-08-16
+
+### Changed
+- Updated build configuration and GitHub Actions workflows for publishing process.
+
 ## [0.1.0] - 2025-08-15
 
 ### Added
