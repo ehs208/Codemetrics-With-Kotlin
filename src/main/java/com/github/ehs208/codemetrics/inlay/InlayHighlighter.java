@@ -82,7 +82,7 @@ public class InlayHighlighter {
       Editor editor,
       EditorMouseEvent event,
       Consumer<Inlay<? extends MetricsHintRenderer>> openPicker) {
-    InlayManager inlayManager = project.getComponent(InlayManager.class);
+    InlayManager inlayManager = project.getService(InlayManager.class);
     List<Inlay<? extends MetricsHintRenderer>> inlays = inlayManager.getInlays(editor);
 
     Optional<Inlay<? extends MetricsHintRenderer>> firstInlay =

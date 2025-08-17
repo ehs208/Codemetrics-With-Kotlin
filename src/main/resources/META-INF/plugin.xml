@@ -10,20 +10,14 @@
   <depends>org.jetbrains.kotlin</depends>
 
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <org.jetbrains.kotlin.supportsKotlinPluginMode>ALL</org.jetbrains.kotlin.supportsKotlinPluginMode>
+      <supportsKotlinPluginMode mode="K1"/>
+      <supportsKotlinPluginMode mode="K2"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceImplementation="com.github.ehs208.codemetrics.core.config.MetricsConfiguration" />
     <applicationConfigurable instance="com.github.ehs208.codemetrics.configuration.EditorConfig"/>
+    <projectService serviceImplementation="com.github.ehs208.codemetrics.inlay.InlayManager"/>
+    <postStartupActivity implementation="com.github.ehs208.codemetrics.inlay.EditorListener"/>
   </extensions>
-
-  <project-components>
-    <component>
-      <implementation-class>com.github.ehs208.codemetrics.inlay.EditorListener</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.github.ehs208.codemetrics.inlay.InlayManager</implementation-class>
-    </component>
-  </project-components>
 </idea-plugin>

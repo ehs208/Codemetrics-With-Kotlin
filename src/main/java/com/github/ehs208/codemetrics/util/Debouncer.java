@@ -2,10 +2,9 @@ package com.github.ehs208.codemetrics.util;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.Alarm;
-import com.intellij.util.AlarmFactory;
 
 public class Debouncer {
-  private Alarm alarm = AlarmFactory.getInstance().create();;
+  private Alarm alarm = new Alarm();
 
   public void debounce(Runnable runnable) {
     alarm.cancelAllRequests();

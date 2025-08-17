@@ -1,21 +1,20 @@
 package com.github.ehs208.codemetrics.inlay;
 
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
+import com.intellij.openapi.startup.ProjectActivity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 
-public class EditorListener implements ProjectComponent {
-  private Project project;
+public class EditorListener implements ProjectActivity {
 
-  public EditorListener(Project project) {
-    this.project = project;
-  }
-
+  @Nullable
   @Override
-  public void projectOpened() {
+  public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
     InlayListenerManager handler = new InlayListenerManager(project);
     project
         .getMessageBus()
@@ -27,11 +26,6 @@ public class EditorListener implements ProjectComponent {
         handler.dispose();
       }
     });
-  }
-
-  @NotNull
-  @Override
-  public String getComponentName() {
-    return "CodeMetrics.EditorListener";
+    return Unit.INSTANCE;
   }
 }

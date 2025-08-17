@@ -1,8 +1,6 @@
 package com.github.ehs208.codemetrics.configuration;
 
 import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
-import com.intellij.ide.plugins.newui.HorizontalLayout;
-import com.intellij.ide.plugins.newui.VerticalLayout;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ColorPanel;
@@ -1276,19 +1274,22 @@ public class EditorConfig implements Configurable {
   public JComponent createComponent() {
     JTabbedPane tabbedPane = new JBTabbedPane();
 
-    final JPanel panel = new JPanel(new VerticalLayout(8));
+    final JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
     for (BeanField field : basicFields) {
       panel.add(field.getComponent());
     }
 
-    final JPanel advanced = new JPanel(new VerticalLayout(8));
+    final JPanel advanced = new JPanel();
+    advanced.setLayout(new BoxLayout(advanced, BoxLayout.Y_AXIS));
 
     for (BeanField field : advancedFields) {
       advanced.add(field.getComponent());
     }
 
-    final JPanel misc = new JPanel(new VerticalLayout(8));
+    final JPanel misc = new JPanel();
+    misc.setLayout(new BoxLayout(misc, BoxLayout.Y_AXIS));
     for (BeanField field : miscFields) {
       misc.add(field.getComponent());
     }
@@ -1382,7 +1383,7 @@ public class EditorConfig implements Configurable {
     }
 
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new HorizontalLayout(8));
+      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
       JLabel label = new JLabel();
       label.setPreferredSize(new Dimension(300, 20));
       label.setText(title);
@@ -1415,7 +1416,7 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new HorizontalLayout(8));
+      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
       JLabel label = new JLabel();
       label.setPreferredSize(new Dimension(300, 20));
       label.setText(title);
@@ -1457,7 +1458,7 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new HorizontalLayout(8));
+      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
       JLabel label = new JLabel();
       label.setPreferredSize(new Dimension(300, 20));
       label.setText(title);
@@ -1493,7 +1494,7 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new HorizontalLayout(8));
+      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
 
       JLabel label = new JLabel();
       label.setText(title);

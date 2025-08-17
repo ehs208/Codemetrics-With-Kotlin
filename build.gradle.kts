@@ -12,7 +12,6 @@ plugins {
 
 group = properties("pluginGroup")
 
-// ✅ 태그에서 버전 추출 (없으면 gradle.properties 값 사용)
 val pluginVersion: String = System.getenv("GITHUB_REF_NAME")
     ?.takeIf { it.startsWith("v") }
     ?.removePrefix("v")
@@ -39,6 +38,14 @@ dependencies {
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
         )
+    }
+}
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            ide("IC", properties("platformVersion"))
+        }
     }
 }
 
@@ -93,7 +100,6 @@ tasks {
     }
 
     publishPlugin {
-        dependsOn("patchChangelog")
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 }

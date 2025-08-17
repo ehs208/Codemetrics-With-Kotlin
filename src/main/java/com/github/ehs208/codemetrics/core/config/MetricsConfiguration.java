@@ -3,7 +3,7 @@ package com.github.ehs208.codemetrics.core.config;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
@@ -29,7 +29,7 @@ public class MetricsConfiguration implements PersistentStateComponent<MetricsCon
   }
 
   public static MetricsConfiguration getInstance() {
-    return ServiceManager.getService(MetricsConfiguration.class);
+    return ApplicationManager.getApplication().getService(MetricsConfiguration.class);
   }
 
   @Nullable

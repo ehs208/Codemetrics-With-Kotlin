@@ -5,7 +5,6 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.core.parser.MetricsParser;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.InlayModel;
@@ -21,7 +20,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class InlayManager implements ProjectComponent {
+public class InlayManager {
   private Project project;
 
   public InlayManager(Project project) {

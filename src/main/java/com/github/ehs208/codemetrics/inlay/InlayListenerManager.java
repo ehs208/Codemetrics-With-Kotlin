@@ -54,7 +54,7 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
       Disposable refreshListener =
           configuration.addListener(
               () -> {
-                InlayManager inlayManager = project.getComponent(InlayManager.class);
+                InlayManager inlayManager = project.getService(InlayManager.class);
                 inlayManager.updateInlays(editor, file);
               });
       disposables.put(
@@ -68,7 +68,7 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
 
   @NotNull
   private DocumentListener registerDocumentListener(@NotNull VirtualFile file, Editor editor) {
-    InlayManager inlayManager = project.getComponent(InlayManager.class);
+    InlayManager inlayManager = project.getService(InlayManager.class);
     DocumentListener listener =
         new DocumentListener() {
           Debouncer debouncer = new Debouncer();
