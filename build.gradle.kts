@@ -12,14 +12,16 @@ plugins {
 
 group = properties("pluginGroup")
 
-val tag = System.getenv("GITHUB_REF_NAME")
-version = if (tag != null && tag.startsWith("v")) {
-    tag.removePrefix("v")
-        .also { println("🔖 Version set from tag: $it") }
-} else {
-    properties("pluginVersion")
+// ✅ 태그에서 버전 추출 (없으면 gradle.properties 값 사용)
+val pluginVersion: String = System.getenv("GITHUB_REF_NAME")
+    ?.takeIf { it.startsWith("v") }
+    ?.removePrefix("v")
+    ?.also { println("🔖 Version set from tag: $it") }
+    ?: properties("pluginVersion")
         .also { println("📦 Version set from gradle.properties: $it") }
-}
+
+// ✅ Gradle project.version (optional, 빌드 캐시/출력 등에 필요)
+version = pluginVersion
 
 repositories {
     mavenCentral()
@@ -52,7 +54,7 @@ java {
 intellijPlatform {
     pluginConfiguration {
         name = properties("pluginName")
-        version = version.toString()
+        version = pluginVersion   // ✅ 반드시 문자열로 지정
         description = file("README.md").readText().lines().run {
             val start = "<!-- Plugin description -->"
             val end = "<!-- Plugin description end -->"
@@ -65,7 +67,7 @@ intellijPlatform {
         changeNotes = provider {
             with(changelog) {
                 renderItem(
-                    (getOrNull(version.toString()) ?: getUnreleased())
+                    (getOrNull(pluginVersion) ?: getUnreleased())
                         .withHeader(false)
                         .withEmptySections(false),
                     Changelog.OutputType.HTML,
