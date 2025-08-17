@@ -10,7 +10,7 @@
   <depends>org.jetbrains.kotlin</depends>
 
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <supportsKotlinPluginMode>ALL</supportsKotlinPluginMode>
+    <org.jetbrains.kotlin.supportsKotlinPluginMode>ALL</org.jetbrains.kotlin.supportsKotlinPluginMode>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
