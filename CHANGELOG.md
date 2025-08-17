@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.1.2] - 2025-08-17
+## [0.1.3] - 2025-08-17
 
 ### Changed
 - Removed deprecated IntelliJ Platform API usages for future compatibility.
