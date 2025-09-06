@@ -335,11 +335,22 @@ public class HandlerRegistry {
     register(KtNodeTypes.TRY, genericHandler.create(c -> c.kotlinTryExpression, c -> c.kotlinTryExpressionDescription));
 
     register(KtNodeTypes.LAMBDA_EXPRESSION, genericHandler.create(c -> c.kotlinLambdaExpression, c -> c.kotlinLambdaExpressionDescription, c -> c.metricsForKotlinLambda));
-    register(KtNodeTypes.BINARY_EXPRESSION, genericHandler.create(c -> c.binaryExpression, c -> c.binaryExpressionDescription));
+    // Special handler for Kotlin binary expressions to handle Elvis operator
+    register(KtNodeTypes.BINARY_EXPRESSION, configuration ->
+        e -> {
+          // Check if this is an Elvis operator
+          if (e.getNode().findChildByType(KtTokens.ELVIS) != null) {
+            // Use kotlinElvisExpression settings for Elvis operator
+            ComplexityHandler elvisHandler = genericHandler.create(c -> c.kotlinElvisExpression, c -> c.kotlinElvisExpressionDescription);
+            return elvisHandler.apply(configuration).apply(e);
+          } else {
+            // Use regular binaryExpression settings for other binary expressions
+            ComplexityHandler binaryHandler = genericHandler.create(c -> c.binaryExpression, c -> c.binaryExpressionDescription);
+            return binaryHandler.apply(configuration).apply(e);
+          }
+        });
     register(KtNodeTypes.CALL_EXPRESSION, genericHandler.create(c -> c.methodCallExpression, c -> c.methodCallExpressionDescription));
     register(KtNodeTypes.SAFE_ACCESS_EXPRESSION, genericHandler.create(c -> c.conditionalExpression, c -> c.conditionalExpressionDescription));
-    register(KtTokens.ELVIS, genericHandler.create(c -> c.kotlinElvisExpression, c -> c.kotlinElvisExpressionDescription));
-
     register(KtNodeTypes.OBJECT_DECLARATION, genericHandler.create(c -> c.kotlinClass, c -> c.kotlinClassDescription, c -> c.metricsForKotlinClass));
     register(KtNodeTypes.BLOCK, genericHandler.create(c -> c.codeBlock, c -> c.codeBlockDescription));
     register(KtNodeTypes.RETURN, genericHandler.create(c -> c.returnStatement, c -> c.returnStatementDescription));

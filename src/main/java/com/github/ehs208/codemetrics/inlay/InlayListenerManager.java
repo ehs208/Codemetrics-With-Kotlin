@@ -49,7 +49,8 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
       InlayHighlighter inlayHighlighter = new InlayHighlighter(project);
       inlayHighlighter.installInlayHighlighter(editor, file);
 
-      DocumentListener listener = registerDocumentListener(file, editor);
+      Debouncer debouncer = new Debouncer();
+      DocumentListener listener = registerDocumentListener(file, editor, debouncer);
       MetricsConfiguration configuration = MetricsConfiguration.getInstance();
       Disposable refreshListener =
           configuration.addListener(
@@ -62,17 +63,16 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
           () -> {
             editor.getDocument().removeDocumentListener(listener);
             refreshListener.dispose();
+            debouncer.dispose();
           });
     }
   }
 
   @NotNull
-  private DocumentListener registerDocumentListener(@NotNull VirtualFile file, Editor editor) {
+  private DocumentListener registerDocumentListener(@NotNull VirtualFile file, Editor editor, Debouncer debouncer) {
     InlayManager inlayManager = project.getService(InlayManager.class);
     DocumentListener listener =
         new DocumentListener() {
-          Debouncer debouncer = new Debouncer();
-
           @Override
           public void documentChanged(@NotNull DocumentEvent event) {
             debouncer.debounce(() -> inlayManager.updateInlays(editor, file));
