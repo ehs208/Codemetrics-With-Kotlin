@@ -19,5 +19,7 @@
     <applicationConfigurable instance="com.github.ehs208.codemetrics.configuration.EditorConfig"/>
     <projectService serviceImplementation="com.github.ehs208.codemetrics.inlay.InlayManager"/>
     <postStartupActivity implementation="com.github.ehs208.codemetrics.inlay.EditorListener"/>
+    <toolWindow id="CodeComplexity" secondary="false" anchor="right" 
+                factoryClass="com.github.ehs208.codemetrics.toolwindow.ComplexityToolWindowFactory"/>
   </extensions>
 </idea-plugin>

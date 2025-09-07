@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-09-07
+- Add complexity analysis tool window for project-wide code overview
+
+## [0.1.4] - 2025-09-07
+- Implemented specialized handler for proper Kotlin Elvis operator (?:) processing
+
 ## [0.1.3] - 2025-08-17
 
 ### Changed
