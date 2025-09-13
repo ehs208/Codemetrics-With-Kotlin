@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2025-09-14
+- Replace hardcoded complexity thresholds (20, 10, 5) with dynamic values from MetricsConfiguration to ensure consistency with user settings across the plugin.
+
 ## [0.1.5] - 2025-09-07
 - Add complexity analysis tool window for project-wide code overview
 
