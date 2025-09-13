@@ -1,5 +1,6 @@
 package com.github.ehs208.codemetrics.toolwindow;
 
+import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.toolwindow.ComplexityAnalysisService.ComplexityMethodInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -24,6 +25,7 @@ public class ComplexityAnalysisPanel extends JPanel {
     private final DefaultListModel<ComplexityMethodInfo> listModel;
     private final JButton refreshButton;
     private final JLabel statusLabel;
+
 
     public ComplexityAnalysisPanel(Project project) {
         this.project = project;
@@ -155,9 +157,17 @@ public class ComplexityAnalysisPanel extends JPanel {
         }
         
         private Color getComplexityTextColor(long complexity) {
-            if (complexity >= 20) return new JBColor(Color.RED, new Color(255, 100, 100));
-            if (complexity >= 10) return new JBColor(new Color(255, 140, 0), new Color(255, 180, 100));  
-            if (complexity >= 5) return new JBColor(new Color(200, 140, 0), new Color(200, 180, 100));
+            MetricsConfiguration config = MetricsConfiguration.getInstance();
+
+            if (complexity >= config.complexityLevelHigh) {
+                return new JBColor(Color.RED, new Color(255, 100, 100));
+            }
+            if (complexity >= config.complexityLevelNormal) {
+                return new JBColor(new Color(255, 140, 0), new Color(255, 180, 100));
+            }
+            if (complexity >= config.complexityLevelLow) {
+                return new JBColor(new Color(200, 140, 0), new Color(200, 180, 100));
+            }
             return JBColor.foreground();
         }
     }
