@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2025-09-15
+- Replace internal API usage with public FilenameIndex API
+
 ## [0.1.6] - 2025-09-14
 - Replace hardcoded complexity thresholds (20, 10, 5) with dynamic values from MetricsConfiguration to ensure consistency with user settings across the plugin.
 
