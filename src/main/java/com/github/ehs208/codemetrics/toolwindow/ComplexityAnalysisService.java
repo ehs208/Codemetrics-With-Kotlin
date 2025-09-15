@@ -8,11 +8,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.indexing.FileBasedIndex;
-import org.jetbrains.kotlin.idea.KotlinFileType;
-import com.intellij.lang.java.JavaLanguage;
+import com.intellij.psi.search.FilenameIndex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,20 +29,16 @@ public final class ComplexityAnalysisService {
             return ReadAction.compute(() -> {
                 List<ComplexityMethodInfo> results = new ArrayList<>();
                 
+                GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
+
                 // Scan Java files
-                Collection<VirtualFile> javaFiles = FileBasedIndex.getInstance()
-                    .getContainingFiles(FileTypeIndex.NAME, JavaLanguage.INSTANCE.getAssociatedFileType(),
-                        GlobalSearchScope.projectScope(project));
-                
+                Collection<VirtualFile> javaFiles = FilenameIndex.getAllFilesByExt(project, "java", scope);
                 for (VirtualFile file : javaFiles) {
                     analyzeFile(file, results);
                 }
-                
+
                 // Scan Kotlin files
-                Collection<VirtualFile> kotlinFiles = FileBasedIndex.getInstance()
-                    .getContainingFiles(FileTypeIndex.NAME, KotlinFileType.INSTANCE,
-                        GlobalSearchScope.projectScope(project));
-                
+                Collection<VirtualFile> kotlinFiles = FilenameIndex.getAllFilesByExt(project, "kt", scope);
                 for (VirtualFile file : kotlinFiles) {
                     analyzeFile(file, results);
                 }
