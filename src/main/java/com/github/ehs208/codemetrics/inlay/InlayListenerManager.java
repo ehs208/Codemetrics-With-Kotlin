@@ -46,6 +46,13 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
         return;
       }
 
+      // Prevent duplicate handlers
+      String fileUrl = file.getUrl();
+      if (disposables.containsKey(fileUrl)) {
+        disposables.get(fileUrl).dispose();
+        disposables.remove(fileUrl);
+      }
+
       InlayHighlighter inlayHighlighter = new InlayHighlighter(project);
       inlayHighlighter.installInlayHighlighter(editor, file);
 

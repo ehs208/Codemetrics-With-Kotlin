@@ -39,7 +39,8 @@ public class InlayManager {
             indicator.setIndeterminate(true);
             indicator.setText("Computing complexity metrics...");
 
-            Stream<MetricsModel> models = ReadAction.compute(() -> computeMetrics(file));
+            List<MetricsModel> models = ReadAction.compute(() ->
+                computeMetrics(file).collect(java.util.stream.Collectors.toList()));
 
             Application application = ApplicationManager.getApplication();
             application.invokeLater(() -> {
