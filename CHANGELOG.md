@@ -3,7 +3,18 @@
 ## [Unreleased]
 
 ## [0.1.7] - 2025-09-15
-- Replace internal API usage with public FilenameIndex API
+### Added
+- Progress indicator for code complexity analysis
+
+### Changed
+- Use public FilenameIndex API instead of internal FileTypeIndex
+- Dynamic color coding from MetricsConfiguration in tool window
+- Improved settings UI layout consistency
+
+### Fixed
+- Threading issues with PSI access in background tasks
+- Settings panel layout problems in dark mode
+
 
 ## [0.1.6] - 2025-09-14
 - Replace hardcoded complexity thresholds (20, 10, 5) with dynamic values from MetricsConfiguration to ensure consistency with user settings across the plugin.

@@ -1383,13 +1383,20 @@ public class EditorConfig implements Configurable {
     }
 
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-      JLabel label = new JLabel();
-      label.setPreferredSize(new Dimension(300, 20));
-      label.setText(title);
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+
+      JLabel label = new JLabel(title);
+      label.setPreferredSize(new Dimension(300, 25));
+      label.setMinimumSize(new Dimension(300, 25));
+      label.setMaximumSize(new Dimension(300, 25));
 
       jPanel.add(label);
+      jPanel.add(Box.createHorizontalStrut(8));
       jPanel.add(colorPanel);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
       return jPanel;
     }
 
@@ -1416,13 +1423,23 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-      JLabel label = new JLabel();
-      label.setPreferredSize(new Dimension(300, 20));
-      label.setText(title);
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+
+      JLabel label = new JLabel(title);
+      label.setPreferredSize(new Dimension(300, 25));
+      label.setMinimumSize(new Dimension(300, 25));
+      label.setMaximumSize(new Dimension(300, 25));
+
+      jbTextField.setPreferredSize(new Dimension(100, 25));
+      jbTextField.setMaximumSize(new Dimension(100, 25));
 
       jPanel.add(label);
+      jPanel.add(Box.createHorizontalStrut(8));
       jPanel.add(jbTextField);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
       return jPanel;
     }
 
@@ -1458,15 +1475,23 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-      JLabel label = new JLabel();
-      label.setPreferredSize(new Dimension(300, 20));
-      label.setText(title);
-      int defaultHeight = (int) jbTextField.getPreferredSize().getHeight();
-      jbTextField.setPreferredSize(new Dimension(200, defaultHeight));
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+
+      JLabel label = new JLabel(title);
+      label.setPreferredSize(new Dimension(300, 25));
+      label.setMinimumSize(new Dimension(300, 25));
+      label.setMaximumSize(new Dimension(300, 25));
+
+      jbTextField.setPreferredSize(new Dimension(200, 25));
+      jbTextField.setMaximumSize(new Dimension(400, 25));
 
       jPanel.add(label);
+      jPanel.add(Box.createHorizontalStrut(8));
       jPanel.add(jbTextField);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
       return jPanel;
     }
 
@@ -1494,13 +1519,20 @@ public class EditorConfig implements Configurable {
 
     @Override
     JPanel createComponent() {
-      JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
 
-      JLabel label = new JLabel();
-      label.setText(title);
+      jbCheckBox.setPreferredSize(new Dimension(20, 25));
+      jbCheckBox.setMaximumSize(new Dimension(20, 25));
+
+      JLabel label = new JLabel(title);
 
       jPanel.add(jbCheckBox);
+      jPanel.add(Box.createHorizontalStrut(8));
       jPanel.add(label);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
       return jPanel;
     }
 

@@ -5,9 +5,13 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.core.parser.MetricsParser;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.InlayModel;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -28,14 +32,23 @@ public class InlayManager {
   }
 
   public void updateInlays(Editor editor, VirtualFile file) {
-    Stream<MetricsModel> models = computeMetrics(file);
+    ProgressManager.getInstance().run(
+        new Task.Backgroundable(project, "Analyzing code complexity for " + file.getName()) {
+          @Override
+          public void run(@NotNull ProgressIndicator indicator) {
+            indicator.setIndeterminate(true);
+            indicator.setText("Computing complexity metrics...");
 
-    Application application = ApplicationManager.getApplication();
-    application.invokeLater(
-        () -> {
-          disposeInlays(editor);
-          models.forEach(model -> installInlay(editor, model));
-        });
+            Stream<MetricsModel> models = ReadAction.compute(() -> computeMetrics(file));
+
+            Application application = ApplicationManager.getApplication();
+            application.invokeLater(() -> {
+              disposeInlays(editor);
+              models.forEach(model -> installInlay(editor, model));
+            });
+          }
+        }
+    );
   }
 
   private Stream<MetricsModel> computeMetrics(VirtualFile file) {

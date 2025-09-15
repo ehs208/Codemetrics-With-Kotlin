@@ -159,14 +159,17 @@ public class ComplexityAnalysisPanel extends JPanel {
         private Color getComplexityTextColor(long complexity) {
             MetricsConfiguration config = MetricsConfiguration.getInstance();
 
+            if (complexity >= config.complexityLevelExtreme) {
+                return new JBColor(new Color(config.complexityColorExtreme), new Color(config.complexityColorExtreme));
+            }
             if (complexity >= config.complexityLevelHigh) {
-                return new JBColor(Color.RED, new Color(255, 100, 100));
+                return new JBColor(new Color(config.complexityColorHigh), new Color(config.complexityColorHigh));
             }
             if (complexity >= config.complexityLevelNormal) {
-                return new JBColor(new Color(255, 140, 0), new Color(255, 180, 100));
+                return new JBColor(new Color(config.complexityColorNormal), new Color(config.complexityColorNormal));
             }
             if (complexity >= config.complexityLevelLow) {
-                return new JBColor(new Color(200, 140, 0), new Color(200, 180, 100));
+                return new JBColor(new Color(config.complexityColorLow), new Color(config.complexityColorLow));
             }
             return JBColor.foreground();
         }
