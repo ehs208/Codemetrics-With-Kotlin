@@ -9,17 +9,16 @@
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.kotlin</depends>
 
-  <extensions defaultExtensionNs="org.jetbrains.kotlin">
-      <supportsKotlinPluginMode mode="K1"/>
-      <supportsKotlinPluginMode mode="K2"/>
-  </extensions>
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true" />
+    </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceImplementation="com.github.ehs208.codemetrics.core.config.MetricsConfiguration" />
     <applicationConfigurable instance="com.github.ehs208.codemetrics.configuration.EditorConfig"/>
     <projectService serviceImplementation="com.github.ehs208.codemetrics.inlay.InlayManager"/>
     <postStartupActivity implementation="com.github.ehs208.codemetrics.inlay.EditorListener"/>
-    <toolWindow id="CodeComplexity" secondary="false" anchor="right" 
+    <toolWindow id="CodeComplexity" secondary="false" anchor="right"
                 factoryClass="com.github.ehs208.codemetrics.toolwindow.ComplexityToolWindowFactory"/>
   </extensions>
 </idea-plugin>

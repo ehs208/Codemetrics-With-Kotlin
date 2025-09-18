@@ -6,7 +6,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.20"
-    id("org.jetbrains.intellij.platform") version "2.7.2"
+    id("org.jetbrains.intellij.platform") version "2.9.0"
     id("org.jetbrains.changelog") version "2.2.0"
 }
 
@@ -19,7 +19,6 @@ val pluginVersion: String = System.getenv("GITHUB_REF_NAME")
     ?: properties("pluginVersion")
         .also { println("📦 Version set from gradle.properties: $it") }
 
-// ✅ Gradle project.version (optional, 빌드 캐시/출력 등에 필요)
 version = pluginVersion
 
 repositories {
@@ -31,7 +30,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity(properties("platformVersion"))
+        create(properties("platformType"), properties("platformVersion"))
         bundledPlugins(
             properties("platformPlugins")
                 .split(',')
@@ -44,7 +43,7 @@ dependencies {
 intellijPlatform {
     pluginVerification {
         ides {
-            ide("IC", properties("platformVersion"))
+            create(properties("platformType"), properties("platformVersion"))
         }
     }
 }
@@ -61,7 +60,7 @@ java {
 intellijPlatform {
     pluginConfiguration {
         name = properties("pluginName")
-        version = pluginVersion   // ✅ 반드시 문자열로 지정
+        version = pluginVersion
         description = file("README.md").readText().lines().run {
             val start = "<!-- Plugin description -->"
             val end = "<!-- Plugin description end -->"

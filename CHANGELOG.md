@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.1.8] - 2025-09-18
+### Added
+- Complete Kotlin K2 compiler mode support declaration
+- Modern IntelliJ Platform Gradle Plugin 2.9.0 compatibility
+
+### Changed
+- Updated to latest IntelliJ Platform Gradle Plugin (2.9.0)
+- Migrated deprecated `ide()` method to modern `create()` API
+- Improved document listener registration for better resource management
+
+### Fixed
+- Deprecated API usage warnings for document listener registration
+- K2 mode compatibility issues resolved
+- Extension point resolution for Kotlin plugin integration
+
 ## [0.1.7] - 2025-09-15
 ### Added
 - Progress indicator for code complexity analysis
