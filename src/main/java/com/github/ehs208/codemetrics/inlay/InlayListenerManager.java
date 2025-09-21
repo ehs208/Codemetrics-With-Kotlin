@@ -57,26 +57,32 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
       inlayHighlighter.installInlayHighlighter(editor, file);
 
       Debouncer debouncer = new Debouncer();
-      DocumentListener documentListener = registerDocumentListener(file, editor, debouncer);
       MetricsConfiguration configuration = MetricsConfiguration.getInstance();
+
+      // Create disposable container for this file's resources
+      Disposable fileDisposable = () -> {
+        debouncer.dispose();
+      };
+
+      registerDocumentListener(file, editor, debouncer, fileDisposable);
       Disposable refreshListener =
           configuration.addListener(
               () -> {
                 InlayManager inlayManager = project.getService(InlayManager.class);
                 inlayManager.updateInlays(editor, file);
               });
-      disposables.put(
-          file.getUrl(),
-          () -> {
-            editor.getDocument().removeDocumentListener(documentListener);
-            refreshListener.dispose();
-            debouncer.dispose();
-          });
+
+      // Combine both disposables
+      Disposable combinedDisposable = () -> {
+        fileDisposable.dispose();
+        refreshListener.dispose();
+      };
+
+      disposables.put(file.getUrl(), combinedDisposable);
     }
   }
 
-  @NotNull
-  private DocumentListener registerDocumentListener(@NotNull VirtualFile file, Editor editor, Debouncer debouncer) {
+  private void registerDocumentListener(@NotNull VirtualFile file, Editor editor, Debouncer debouncer, Disposable parentDisposable) {
     InlayManager inlayManager = project.getService(InlayManager.class);
     DocumentListener listener =
         new DocumentListener() {
@@ -87,9 +93,8 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
         };
     inlayManager.updateInlays(editor, file);
 
-    // Add document listener (modern API with Disposable parent will be used in future versions)
-    editor.getDocument().addDocumentListener(listener);
-    return listener;
+    // Use modern API with proper parent Disposable to prevent memory leaks
+    editor.getDocument().addDocumentListener(listener, parentDisposable);
   }
 
   @Override
