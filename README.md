@@ -1,7 +1,7 @@
 # CodeMetrics With Kotlin
 
-[![Version](https://img.shields.io/jetbrains/plugin/v/25329-codemetrics-with-kotlin.svg)](https://plugins.jetbrains.com/plugin/25329-codemetrics-with-kotlin)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/25329-codemetrics-with-kotlin.svg)](https://plugins.jetbrains.com/plugin/25329-codemetrics-with-kotlin)
+[![Version](https://img.shields.io/jetbrains/plugin/v/28221-codemetrics-with-kotlin.svg)](https://plugins.jetbrains.com/plugin/28221-codemetrics-with-kotlin)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/28221-codemetrics-with-kotlin.svg)](https://plugins.jetbrains.com/plugin/28221-codemetrics-with-kotlin)
 
 <!-- Plugin description -->
 Provides inlay indicators based on a customizable complexity calculation for **Java** and **Kotlin** files.
