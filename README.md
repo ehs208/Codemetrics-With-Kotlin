@@ -41,6 +41,40 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 - **Kotlin K1 and K2** compiler modes
 - **Java** and **Kotlin** languages
 
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**Quick start for contributors**:
+```bash
+git clone https://github.com/YOUR_USERNAME/codemetrics-idea.git
+cd codemetrics-idea
+./gradlew runIde
+```
+
 ## License
 Licensed under the [MIT License](LICENSE).
 <!-- Plugin description end -->
+
+---
+
+## Development
+
+### Building from Source
+```bash
+./gradlew build
+```
+
+### Running in Development IDE
+```bash
+./gradlew runIde
+```
+
+### Publishing (Maintainers Only)
+```bash
+# Update version in gradle.properties and CHANGELOG.md
+# Then create a tag:
+git tag v0.2.0
+git push origin v0.2.0
+# Auto-publishes to JetBrains Marketplace
+```
