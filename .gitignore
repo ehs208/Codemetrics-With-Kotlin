@@ -17,7 +17,8 @@ Thumbs.db
 # Plugin development files
 .idea_modules/
 
-CLAUDE.md
+# Local Claude overrides (not shared)
+.claude.local.md
 
 # Temporary files
 *.tmp
