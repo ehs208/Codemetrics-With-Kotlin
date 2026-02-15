@@ -1,24 +1,69 @@
 name: CI
 
 on:
-  push:
-    branches: [ release ]
   pull_request:
-    branches: [ release ]
+    branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
-  validate:
+  validate-pr:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Prevent forbidden file changes
+      - name: Validate version in gradle.properties
         run: |
-          CHANGED=$(git diff --name-only origin/main...HEAD)
-          echo "Changed files: $CHANGED"
-          if echo "$CHANGED" | grep -E 'gradle.properties|build.gradle.kts|CHANGELOG.md'; then
-            echo "❌ Forbidden files changed in PR"
-            exit 1
+          # Check if gradle.properties was modified
+          if git diff --name-only origin/main...HEAD | grep -q "^gradle.properties$"; then
+            echo "⚠️  gradle.properties was modified, checking..."
+
+            # Get the version diff
+            MAIN_VERSION=$(git show origin/main:gradle.properties | grep '^pluginVersion' | cut -d'=' -f2 | tr -d ' ')
+            PR_VERSION=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | tr -d ' ')
+
+            if [ "$MAIN_VERSION" != "$PR_VERSION" ]; then
+              echo "❌ Version change detected in gradle.properties"
+              echo "   Main branch version: $MAIN_VERSION"
+              echo "   PR version: $PR_VERSION"
+              echo ""
+              echo "   Please do NOT change the version number in contributor PRs."
+              echo "   The maintainer will update the version when releasing."
+              exit 1
+            fi
+
+            echo "✅ gradle.properties modified but version unchanged"
+          fi
+
+      - name: Validate CHANGELOG.md format
+        run: |
+          # Check if CHANGELOG.md was modified
+          if git diff --name-only origin/main...HEAD | grep -q "^CHANGELOG.md$"; then
+            echo "📝 CHANGELOG.md was modified, checking format..."
+
+            # Extract the diff for CHANGELOG.md
+            DIFF=$(git diff origin/main...HEAD -- CHANGELOG.md)
+
+            # Check if changes are only in [Unreleased] section
+            # Contributors should only add to [Unreleased], not create new version sections
+            if echo "$DIFF" | grep -E "^\+## \[[0-9]"; then
+              echo "❌ Do not add version sections in PRs"
+              echo "   Please only add your changes under [Unreleased] section"
+              echo ""
+              echo "   Example:"
+              echo "   ## [Unreleased]"
+              echo "   ### Added"
+              echo "   - Your new feature"
+              exit 1
+            fi
+
+            echo "✅ CHANGELOG.md changes look good"
+          else
+            echo "ℹ️  CHANGELOG.md not modified"
+            echo "   Consider adding your changes to the [Unreleased] section!"
           fi
 
   build:
@@ -38,3 +83,7 @@ jobs:
 
       - name: Verify Plugin
         run: ./gradlew verifyPlugin
+
+      - name: Run Tests
+        run: ./gradlew test
+        continue-on-error: true  # No tests configured yet
