@@ -2,7 +2,7 @@
 
 IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay hints for Java and Kotlin files.
 
-**Version**: 0.1.9
+**Version**: 0.2.0
 **License**: MIT (Dual copyright: Tamas Kisst + ehs208)
 **Based on**: [Original CodeMetrics](https://github.com/kisstkondoros/codemetrics-idea) by Tamas Kisst
 
@@ -12,7 +12,7 @@ IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay 
 
 ### Prerequisites
 - Java 17+
-- IntelliJ IDEA 2024.2.1+
+- IntelliJ IDEA 2024.3+
 - Gradle 9.0 (via wrapper)
 
 ### Commands
@@ -46,14 +46,17 @@ IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay 
 - ✅ All PRs go to `main` branch
 
 ### For Maintainers
+- **Current Maintainer**: ehs208
 - Atomic commits by feature (avoid monolithic commits)
 - Use conventional commit prefixes: `feat:`, `fix:`, `docs:`, `chore:`, `ci:`
 - Tag format: `v*` (e.g., `v0.2.0`) triggers auto-publish
+- Version updates: Update both `gradle.properties` and `CHANGELOG.md`
+- Release process: See [Release Workflow](.claude/release-workflow.md)
 
 ---
 
 ## Plugin Distribution
 
 - **Marketplace**: https://plugins.jetbrains.com/plugin/28221-codemetrics-with-kotlin
-- **Platforms**: IntelliJ IDEA 2024.2.1+ (Community & Ultimate)
+- **Platforms**: IntelliJ IDEA 2024.3+ (Community & Ultimate)
 - **Languages**: Java, Kotlin (K1 & K2)

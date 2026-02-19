@@ -14,11 +14,13 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 - Real-time cyclomatic complexity calculation for **Java and Kotlin**
 - Inline complexity hints in the editor with color-coded severity
 - **Project-wide complexity analysis** tool window for code overview
-- Customizable thresholds and colors
+- Customizable thresholds and colors with automatic validation
 - Click on hints to see detailed breakdowns
 - **Full Kotlin K2 compiler mode support**
-- Supports classes, methods, control flow statements, and lambda expressions
+- Supports classes, methods, control flow statements, properties, and lambda expressions
+- **Granular Kotlin visibility controls** - toggle metrics for individual constructs (if, when, for, while, try, properties)
 - **Specialized handling for Kotlin constructs** (Elvis operator, when expressions, etc.)
+- Robust error handling with user-friendly validation messages
 
 ## Installation
 - **Using IDE built-in plugin system**:
@@ -27,19 +29,34 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 ## Configuration
 <kbd>Settings/Preferences</kbd> > <kbd>Code Metrics</kbd> to customize:
 - Complexity thresholds for different colors (low/normal/high/extreme)
-- Which elements to measure (methods, classes, lambda expressions)
+- Which elements to measure (methods, classes, lambda expressions, properties)
+- **Granular Kotlin visibility controls** (classes, functions, properties, lambdas, if/when/for/while/try)
 - Calculation weights for different constructs
 - **Kotlin-specific settings** (Elvis operator, when expressions)
+
+**Note**: The plugin automatically validates configuration to prevent invalid threshold combinations.
 
 ## Usage
 1. **Inline Hints**: Complexity scores appear as inlay hints next to methods and classes
 2. **Tool Window**: Access project-wide complexity analysis via <kbd>View</kbd> > <kbd>Tool Windows</kbd> > <kbd>Code Complexity</kbd>
+   - Sortable by complexity score
+   - Click to navigate to code
 3. **Interactive**: Click on any complexity hint to see detailed breakdown
+4. **Configuration**: Fine-tune visibility and thresholds in settings - invalid values are automatically corrected
 
 ## Supported Platforms
-- **IntelliJ IDEA** 2024.2.1+
+- **IntelliJ IDEA** 2024.3+
 - **Kotlin K1 and K2** compiler modes
 - **Java** and **Kotlin** languages
+
+## Test Samples
+
+The [`complexity-test-samples/`](complexity-test-samples/) directory is a standalone Gradle project with comprehensive test cases:
+
+- **Java**: Simple to extreme complexity (1-25+), lambda expressions, anonymous classes, nested conditions
+- **Kotlin**: when/if/for/while/try expressions, Elvis operator, properties, sealed classes
+
+Open `complexity-test-samples` as a separate project in IntelliJ IDEA to test the plugin.
 
 ## Contributing
 
