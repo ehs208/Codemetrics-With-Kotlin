@@ -62,12 +62,20 @@ Open `complexity-test-samples` as a separate project in IntelliJ IDEA to test th
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-**Quick start for contributors**:
+### For Contributors
+
+**Prerequisites**:
+- Java 17+ (required for building)
+- Java 21 recommended for Gradle JVM to avoid validation warnings with newer JDK versions
+
+**Quick start**:
 ```bash
 git clone https://github.com/YOUR_USERNAME/codemetrics-idea.git
 cd codemetrics-idea
 ./gradlew runIde
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions and development tips.
 
 ## License
 Licensed under the [MIT License](LICENSE).

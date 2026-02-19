@@ -4,6 +4,7 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.util.Debouncer;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -48,7 +49,16 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
   private void installInlayHandler(@NotNull VirtualFile file, FileEditor fileEditor) {
     if (fileEditor instanceof TextEditor) {
       Editor editor = ((TextEditor) fileEditor).getEditor();
-      PsiFile psiFile = PsiUtilBase.getPsiFile(project, file);
+
+      // Wrap PSI access in ReadAction and handle AssertionError
+      PsiFile psiFile;
+      try {
+        psiFile = ReadAction.compute(() -> PsiUtilBase.getPsiFile(project, file));
+      } catch (AssertionError e) {
+        // File is not in PSI yet (e.g., indexing in progress, not a source file)
+        return;
+      }
+
       if (!isSupported(psiFile)) {
         return;
       }

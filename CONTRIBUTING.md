@@ -7,6 +7,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 ### Prerequisites
 - **Java 17+** (required)
 - **IntelliJ IDEA 2024.2.1+** (Community or Ultimate)
+- **Gradle JVM**: Java 21 recommended (to avoid validation warnings with newer JDK versions)
 - Git
 
 ### Setup Development Environment

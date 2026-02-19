@@ -75,6 +75,28 @@ Both K1 and K2 modes are supported. No special handling needed - the plugin APIs
 
 ---
 
+## Common Development Issues
+
+### GradleJvmSupportMatrix Error (Java 25)
+
+**What you'll see**:
+```
+Error: GradleJvmSupportMatrix: IntelliJ 2024.3 cannot parse Java 25
+```
+
+**What's happening**: IntelliJ 2024.3 doesn't recognize Java 25 syntax, and Gradle complains about it when validating the JVM version you're using.
+
+**Does it break the build?** Nope. The plugin builds and runs fine. It's just an IDE validation warning.
+
+**How to fix it** (if it bothers you):
+1. Open IntelliJ Settings → Build, Execution, Deployment → Gradle
+2. Set **Gradle JVM** to `Java 21` (not your default JDK)
+3. Click Apply and sync your project
+
+**Or just ignore it** - the build works regardless. Your system JDK can be Java 25; Gradle will still compile everything correctly. This is purely an IDE configuration issue, not a plugin code bug.
+
+---
+
 ## Version Management
 
 ### Where Version is Defined
