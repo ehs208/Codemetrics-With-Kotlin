@@ -326,13 +326,13 @@ public class HandlerRegistry {
   private static void registerKotlinHandlers(SimpleHandlerFactory genericHandler) {
     register(KtNodeTypes.CLASS, genericHandler.create(c -> c.kotlinClass, c -> c.kotlinClassDescription, c -> c.metricsForKotlinClass));
     register(KtNodeTypes.FUN, genericHandler.create(c -> c.kotlinFunction, c -> c.kotlinFunctionDescription, c -> c.metricsForKotlinFunction));
-    register(KtNodeTypes.PROPERTY, genericHandler.create(c -> c.kotlinProperty, c -> c.kotlinPropertyDescription));
+    register(KtNodeTypes.PROPERTY, genericHandler.create(c -> c.kotlinProperty, c -> c.kotlinPropertyDescription, c -> c.metricsForKotlinProperty));
 
-    register(KtNodeTypes.IF, genericHandler.create(c -> c.kotlinIfExpression, c -> c.kotlinIfExpressionDescription));
-    register(KtNodeTypes.WHEN, genericHandler.create(c -> c.kotlinWhenExpression, c -> c.kotlinWhenExpressionDescription));
-    register(KtNodeTypes.FOR, genericHandler.create(c -> c.kotlinForLoop, c -> c.kotlinForLoopDescription));
-    register(KtNodeTypes.WHILE, genericHandler.create(c -> c.kotlinWhileLoop, c -> c.kotlinWhileLoopDescription));
-    register(KtNodeTypes.TRY, genericHandler.create(c -> c.kotlinTryExpression, c -> c.kotlinTryExpressionDescription));
+    register(KtNodeTypes.IF, genericHandler.create(c -> c.kotlinIfExpression, c -> c.kotlinIfExpressionDescription, c -> c.metricsForKotlinIf));
+    register(KtNodeTypes.WHEN, genericHandler.create(c -> c.kotlinWhenExpression, c -> c.kotlinWhenExpressionDescription, c -> c.metricsForKotlinWhen));
+    register(KtNodeTypes.FOR, genericHandler.create(c -> c.kotlinForLoop, c -> c.kotlinForLoopDescription, c -> c.metricsForKotlinFor));
+    register(KtNodeTypes.WHILE, genericHandler.create(c -> c.kotlinWhileLoop, c -> c.kotlinWhileLoopDescription, c -> c.metricsForKotlinWhile));
+    register(KtNodeTypes.TRY, genericHandler.create(c -> c.kotlinTryExpression, c -> c.kotlinTryExpressionDescription, c -> c.metricsForKotlinTry));
 
     register(KtNodeTypes.LAMBDA_EXPRESSION, genericHandler.create(c -> c.kotlinLambdaExpression, c -> c.kotlinLambdaExpressionDescription, c -> c.metricsForKotlinLambda));
     // Special handler for Kotlin binary expressions to handle Elvis operator
