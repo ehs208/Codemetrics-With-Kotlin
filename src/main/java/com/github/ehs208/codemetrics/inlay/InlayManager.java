@@ -65,6 +65,7 @@ public class InlayManager {
 
     MetricsModel model = new MetricsParser().getMetrics(psiFile);
     MetricsConfiguration configuration = MetricsConfiguration.getInstance();
+    configuration.validateAndFixState(); // Ensure configuration is valid
     Predicate<MetricsModel> metricsModelPredicate =
         p -> p.isVisible() && p.getCollectedComplexity() >= configuration.hiddenUnder;
 

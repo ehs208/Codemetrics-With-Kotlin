@@ -27,39 +27,43 @@ public final class ComplexityAnalysisService {
     public CompletableFuture<List<ComplexityMethodInfo>> analyzeProjectComplexity() {
         return CompletableFuture.supplyAsync(() -> {
             return ReadAction.compute(() -> {
+                // Ensure configuration is valid before analysis
+                com.github.ehs208.codemetrics.core.config.MetricsConfiguration.getInstance().validateAndFixState();
+
                 List<ComplexityMethodInfo> results = new ArrayList<>();
-                
                 GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
+
+                // Reusable parser instance for better performance
+                MetricsParser parser = new MetricsParser();
 
                 // Scan Java files
                 Collection<VirtualFile> javaFiles = FilenameIndex.getAllFilesByExt(project, "java", scope);
                 for (VirtualFile file : javaFiles) {
-                    analyzeFile(file, results);
+                    analyzeFile(file, results, parser);
                 }
 
                 // Scan Kotlin files
                 Collection<VirtualFile> kotlinFiles = FilenameIndex.getAllFilesByExt(project, "kt", scope);
                 for (VirtualFile file : kotlinFiles) {
-                    analyzeFile(file, results);
+                    analyzeFile(file, results, parser);
                 }
-                
+
                 // Sort by complexity descending
                 results.sort((a, b) -> Long.compare(b.getComplexity(), a.getComplexity()));
-                
+
                 return results;
             });
         });
     }
 
-    private void analyzeFile(VirtualFile file, List<ComplexityMethodInfo> results) {
+    private void analyzeFile(VirtualFile file, List<ComplexityMethodInfo> results, MetricsParser parser) {
         if (!file.isValid()) return;
-        
+
         PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
         if (psiFile == null) return;
-        
-        MetricsParser parser = new MetricsParser();
+
         MetricsModel model = parser.getMetrics(psiFile);
-        
+
         if (model != null) {
             collectMethodComplexity(model, file, results);
         }
@@ -84,15 +88,6 @@ public final class ComplexityAnalysisService {
         for (MetricsModel child : model.getChildren()) {
             collectMethodComplexity(child, file, results);
         }
-    }
-
-    private boolean isMethodLike(String description) {
-        return description != null && (
-            description.contains("method") ||
-            description.contains("function") ||
-            description.contains("constructor") ||
-            description.contains("lambda")
-        );
     }
 
     public static class ComplexityMethodInfo {
