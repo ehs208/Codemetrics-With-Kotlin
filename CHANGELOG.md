@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 ### Removed
 
+## [0.2.0] - 2026-02-19
+### Added
+- Configuration validation to prevent invalid complexity thresholds
+- Kotlin control flow visibility toggles (if, when, for, while, try expressions)
+- Real-time input validation in settings with visual feedback (red border and tooltips)
+- Notification dialog when settings are automatically corrected for invalid threshold values
+- Input validation with user-friendly error dialogs in settings UI
+- Automatic configuration validation when loading settings from disk
+
+### Changed
+- Improved complexity color calculation with division-by-zero prevention
+- Reusable MetricsParser instance in ComplexityAnalysisService to reduce object allocation
+- Minimum platform version updated to IntelliJ IDEA 2024.3 for better compatibility
+
+### Fixed
+- Complexity hints now appear immediately for files already open when plugin loads
+- Settings dialog no longer shows error messages in wrong IDE window
+- Invalid input in settings fields is now properly prevented and highlighted
+- Kotlin property metrics toggle not being respected in handler registration
+- Potential division-by-zero errors in color interpolation when thresholds are equal
+- Silent acceptance of invalid numeric input in configuration fields
+- Missing configuration validation in InlayManager and ComplexityAnalysisService
+- Cascading validation logic ensuring strict threshold ordering (low < normal < high < extreme)
+
 ## [0.1.8] - 2025-09-18
 ### Added
 - Complete Kotlin K2 compiler mode support declaration
