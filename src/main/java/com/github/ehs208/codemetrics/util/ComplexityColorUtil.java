@@ -33,18 +33,32 @@ public final class ComplexityColorUtil {
     Color lowColor = new Color(configuration.complexityColorLow, true);
 
     if (summary >= complexityLevelExtreme) {
-      double balance =
-          (summary - complexityLevelHigh) / (double) (complexityLevelExtreme - complexityLevelHigh);
-      color = ColorUtil.mix(extremeColor, highColor, 1d / balance);
+      int range = complexityLevelExtreme - complexityLevelHigh;
+      if (range == 0 || summary == complexityLevelHigh) {
+        // Degenerate case: thresholds are equal or at exact boundary
+        color = extremeColor;
+      } else {
+        double balance = (summary - complexityLevelHigh) / (double) range;
+        color = ColorUtil.mix(extremeColor, highColor, 1d / balance);
+      }
     } else if (summary >= complexityLevelHigh) {
-      double balance =
-          (summary - complexityLevelNormal)
-              / (double) (complexityLevelHigh - complexityLevelNormal);
-      color = ColorUtil.mix(highColor, normalColor, 1d / balance);
+      int range = complexityLevelHigh - complexityLevelNormal;
+      if (range == 0 || summary == complexityLevelNormal) {
+        // Degenerate case: thresholds are equal or at exact boundary
+        color = highColor;
+      } else {
+        double balance = (summary - complexityLevelNormal) / (double) range;
+        color = ColorUtil.mix(highColor, normalColor, 1d / balance);
+      }
     } else if (summary >= complexityLevelNormal) {
-      double balance =
-          (summary - complexityLevelLow) / (double) (complexityLevelNormal - complexityLevelLow);
-      color = ColorUtil.mix(normalColor, lowColor, 1d / balance);
+      int range = complexityLevelNormal - complexityLevelLow;
+      if (range == 0 || summary == complexityLevelLow) {
+        // Degenerate case: thresholds are equal or at exact boundary
+        color = normalColor;
+      } else {
+        double balance = (summary - complexityLevelLow) / (double) range;
+        color = ColorUtil.mix(normalColor, lowColor, 1d / balance);
+      }
     } else {
       color = lowColor;
     }
