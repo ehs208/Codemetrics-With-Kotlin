@@ -41,6 +41,86 @@ public class MetricsConfiguration implements PersistentStateComponent<MetricsCon
   @Override
   public void loadState(@NotNull MetricsConfiguration state) {
     XmlSerializerUtil.copyBean(state, this);
+    validateAndFixState();
+  }
+
+  /**
+   * Validates and corrects configuration values to prevent runtime errors.
+   * Called after loading state from disk and before applying user changes.
+   * Uses cascading validation to ensure strict ordering: low < normal < high < extreme
+   */
+  public boolean validateAndFixState() {
+    // Capture original values to detect changes
+    int originalHiddenUnder = hiddenUnder;
+    int originalLow = complexityLevelLow;
+    int originalNormal = complexityLevelNormal;
+    int originalHigh = complexityLevelHigh;
+    int originalExtreme = complexityLevelExtreme;
+
+    // Ensure non-negative values
+    if (hiddenUnder < 0) hiddenUnder = 0;
+
+    // Set safe defaults for invalid values (top-down)
+    if (complexityLevelExtreme <= 0) complexityLevelExtreme = 25;
+    if (complexityLevelHigh <= 0) complexityLevelHigh = 10;
+    if (complexityLevelNormal <= 0) complexityLevelNormal = 5;
+    if (complexityLevelLow < 0) complexityLevelLow = 0;
+
+    // Ensure strict ordering with cascading validation (bottom-up)
+    // This guarantees: low < normal < high < extreme
+
+    // Start from bottom: ensure low < normal
+    if (complexityLevelLow >= complexityLevelNormal) {
+      complexityLevelLow = Math.max(0, complexityLevelNormal - 1);
+    }
+
+    // Ensure normal < high
+    if (complexityLevelNormal >= complexityLevelHigh) {
+      complexityLevelNormal = complexityLevelHigh - 1;
+      // Re-validate low after normal changed
+      if (complexityLevelLow >= complexityLevelNormal) {
+        complexityLevelLow = Math.max(0, complexityLevelNormal - 1);
+      }
+    }
+
+    // Ensure high < extreme
+    if (complexityLevelHigh >= complexityLevelExtreme) {
+      complexityLevelHigh = complexityLevelExtreme - 1;
+      // Re-validate normal and low after high changed
+      if (complexityLevelNormal >= complexityLevelHigh) {
+        complexityLevelNormal = complexityLevelHigh - 1;
+        if (complexityLevelLow >= complexityLevelNormal) {
+          complexityLevelLow = Math.max(0, complexityLevelNormal - 1);
+        }
+      }
+    }
+
+    // Final safety check: ensure minimum viable thresholds
+    // This prevents degenerate cases like extreme=1, high=0, normal=-1, low=-2
+    if (complexityLevelExtreme < 4) {
+      complexityLevelExtreme = 4;
+      complexityLevelHigh = 3;
+      complexityLevelNormal = 2;
+      complexityLevelLow = 0;
+    } else {
+      // Ensure each level is at least 1 less than the one above
+      if (complexityLevelHigh >= complexityLevelExtreme) {
+        complexityLevelHigh = complexityLevelExtreme - 1;
+      }
+      if (complexityLevelNormal >= complexityLevelHigh) {
+        complexityLevelNormal = complexityLevelHigh - 1;
+      }
+      if (complexityLevelLow >= complexityLevelNormal) {
+        complexityLevelLow = Math.max(0, complexityLevelNormal - 1);
+      }
+    }
+
+    // Return true if any value was modified
+    return hiddenUnder != originalHiddenUnder
+        || complexityLevelLow != originalLow
+        || complexityLevelNormal != originalNormal
+        || complexityLevelHigh != originalHigh
+        || complexityLevelExtreme != originalExtreme;
   }
 
   public Integer complexityColorLow = 0xFF4bb14f;
@@ -266,6 +346,13 @@ public class MetricsConfiguration implements PersistentStateComponent<MetricsCon
   public boolean metricsForKotlinFunction = true;
   public boolean metricsForKotlinProperty = false;
   public boolean metricsForKotlinLambda = true;
+
+  // Kotlin control flow visibility flags (consistent with Java)
+  public boolean metricsForKotlinIf = true;
+  public boolean metricsForKotlinWhen = true;
+  public boolean metricsForKotlinFor = true;
+  public boolean metricsForKotlinWhile = true;
+  public boolean metricsForKotlinTry = true;
   
   // Kotlin complexity values
   public int kotlinClass = 1;

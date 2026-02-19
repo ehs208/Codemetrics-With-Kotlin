@@ -121,6 +121,31 @@ public class EditorConfig implements Configurable {
         () -> configuration.metricsForKotlinLambda,
         v -> configuration.metricsForKotlinLambda = v,
         "Show metrics for Kotlin lambda expressions");
+    checkBox(
+        basicFields,
+        () -> configuration.metricsForKotlinIf,
+        v -> configuration.metricsForKotlinIf = v,
+        "Show metrics for Kotlin if expressions");
+    checkBox(
+        basicFields,
+        () -> configuration.metricsForKotlinWhen,
+        v -> configuration.metricsForKotlinWhen = v,
+        "Show metrics for Kotlin when expressions");
+    checkBox(
+        basicFields,
+        () -> configuration.metricsForKotlinFor,
+        v -> configuration.metricsForKotlinFor = v,
+        "Show metrics for Kotlin for loops");
+    checkBox(
+        basicFields,
+        () -> configuration.metricsForKotlinWhile,
+        v -> configuration.metricsForKotlinWhile = v,
+        "Show metrics for Kotlin while loops");
+    checkBox(
+        basicFields,
+        () -> configuration.metricsForKotlinTry,
+        v -> configuration.metricsForKotlinTry = v,
+        "Show metrics for Kotlin try expressions");
 
     /* advanced fields */
     text(
@@ -1308,10 +1333,91 @@ public class EditorConfig implements Configurable {
   }
 
   public void apply() {
-    basicFields.forEach(BeanField::apply);
-    advancedFields.forEach(BeanField::apply);
-    miscFields.forEach(BeanField::apply);
-    configuration.notifyListeners();
+    // Validate all numeric fields before applying
+    java.util.List<String> invalidFields = new java.util.ArrayList<>();
+
+    for (BeanField field : basicFields) {
+      if (field instanceof NumericField) {
+        NumericField numField = (NumericField) field;
+        if (!numField.isValidInput()) {
+          invalidFields.add(numField.title);
+        }
+      }
+    }
+    for (BeanField field : advancedFields) {
+      if (field instanceof NumericField) {
+        NumericField numField = (NumericField) field;
+        if (!numField.isValidInput()) {
+          invalidFields.add(numField.title);
+        }
+      }
+    }
+    for (BeanField field : miscFields) {
+      if (field instanceof NumericField) {
+        NumericField numField = (NumericField) field;
+        if (!numField.isValidInput()) {
+          invalidFields.add(numField.title);
+        }
+      }
+    }
+
+    // Show error if there are invalid fields
+    if (!invalidFields.isEmpty()) {
+      String fieldList = String.join("\n  - ", invalidFields);
+      javax.swing.SwingUtilities.invokeLater(() -> {
+        javax.swing.JOptionPane.showMessageDialog(
+            null,
+            "Please enter valid integer values for the following fields:\n  - " + fieldList,
+            "Invalid Input",
+            javax.swing.JOptionPane.ERROR_MESSAGE);
+      });
+      return; // Don't save invalid configuration
+    }
+
+    try {
+      // Apply all fields
+      for (BeanField field : basicFields) {
+        field.apply();
+      }
+      for (BeanField field : advancedFields) {
+        field.apply();
+      }
+      for (BeanField field : miscFields) {
+        field.apply();
+      }
+
+      // Validate and auto-correct configuration
+      boolean wasModified = configuration.validateAndFixState();
+
+      // Update UI to reflect auto-corrected values
+      basicFields.forEach(BeanField::reset);
+      advancedFields.forEach(BeanField::reset);
+      miscFields.forEach(BeanField::reset);
+
+      // Notify user if values were auto-corrected
+      if (wasModified) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+          javax.swing.JOptionPane.showMessageDialog(
+              null,
+              "Configuration values were automatically adjusted to ensure valid thresholds.\nPlease review the updated values.",
+              "Settings Auto-Corrected",
+              javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        });
+      }
+
+      configuration.notifyListeners();
+    } catch (IllegalStateException e) {
+      // Configuration validation failed - show error to user
+      javax.swing.SwingUtilities.invokeLater(() -> {
+        javax.swing.JOptionPane.showMessageDialog(
+            null,
+            e.getMessage(),
+            "Invalid Configuration",
+            javax.swing.JOptionPane.ERROR_MESSAGE);
+      });
+      // Don't save invalid configuration
+      reset();
+    }
   }
 
   public void reset() {
@@ -1419,6 +1525,34 @@ public class EditorConfig implements Configurable {
       super(getter, setter);
       this.title = title;
       jbTextField = new JBTextField();
+
+      // Add real-time validation feedback
+      jbTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+          validateInput();
+        }
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+          validateInput();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+          validateInput();
+        }
+
+        private void validateInput() {
+          if (isValidInput()) {
+            jbTextField.setToolTipText(null);
+            jbTextField.putClientProperty("JComponent.outline", null);
+          } else {
+            jbTextField.setToolTipText("Please enter a valid integer");
+            jbTextField.putClientProperty("JComponent.outline", "error");
+          }
+        }
+      });
     }
 
     @Override
@@ -1446,14 +1580,23 @@ public class EditorConfig implements Configurable {
     @Override
     Integer getComponentValue() {
       String text = jbTextField.getText();
-      int result = 0;
       try {
-        result = Integer.parseInt(text);
-      } catch (Exception e) {
-
+        return Integer.parseInt(text);
+      } catch (NumberFormatException e) {
+        // Invalid input - return current bean value to prevent modification
+        // This allows isModified() to work without throwing exceptions
+        return getBeanValue();
       }
+    }
 
-      return result;
+    boolean isValidInput() {
+      String text = jbTextField.getText();
+      try {
+        Integer.parseInt(text);
+        return true;
+      } catch (NumberFormatException e) {
+        return false;
+      }
     }
 
     @Override
