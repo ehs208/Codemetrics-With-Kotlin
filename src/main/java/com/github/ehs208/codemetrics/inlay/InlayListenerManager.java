@@ -30,6 +30,13 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
   public InlayListenerManager(Project project) {
     this.project = project;
     disposables = Maps.newHashMap();
+
+    // Install inlay hints for already opened files when plugin loads
+    FileEditorManager editorManager = FileEditorManager.getInstance(project);
+    for (VirtualFile file : editorManager.getOpenFiles()) {
+      Arrays.stream(editorManager.getEditors(file))
+          .forEach(fileEditor -> installInlayHandler(file, fileEditor));
+    }
   }
 
   @Override
@@ -56,7 +63,8 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
       InlayHighlighter inlayHighlighter = new InlayHighlighter(project);
       inlayHighlighter.installInlayHighlighter(editor, file);
 
-      Debouncer debouncer = new Debouncer();
+      // Use InlayListenerManager (this) as parent to prevent memory leaks
+      Debouncer debouncer = new Debouncer(this);
       MetricsConfiguration configuration = MetricsConfiguration.getInstance();
 
       // Create disposable container for this file's resources

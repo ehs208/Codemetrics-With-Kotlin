@@ -5,7 +5,12 @@ import com.intellij.openapi.Disposable;
 import com.intellij.util.Alarm;
 
 public class Debouncer implements Disposable {
-  private final Alarm alarm = new Alarm(this);
+  private final Alarm alarm;
+
+  public Debouncer(Disposable parent) {
+    // Register alarm with proper parent to prevent memory leaks
+    this.alarm = new Alarm(parent);
+  }
 
   public void debounce(Runnable runnable) {
     alarm.cancelAllRequests();
