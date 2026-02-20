@@ -22,13 +22,6 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 - **Specialized handling for Kotlin constructs** (Elvis operator, when expressions, etc.)
 - Robust error handling with user-friendly validation messages
 
-## Screenshots
-
-<p align="center">
-  <img src="screenshots/1.png" width="45%" alt="Code complexity hints in editor" />
-  <img src="screenshots/2.png" width="45%" alt="Complexity analysis tool window" />
-</p>
-
 ## Installation
 - **Using IDE built-in plugin system**:
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "CodeMetrics With Kotlin"</kbd> > <kbd>Install</kbd>
@@ -87,6 +80,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions and developme
 ## License
 Licensed under the [MIT License](LICENSE).
 <!-- Plugin description end -->
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/1.png" width="45%" alt="Code complexity hints in editor" />
+  <img src="screenshots/2.png" width="45%" alt="Complexity analysis tool window" />
+</p>
 
 ---
 
