@@ -13,35 +13,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.2.0] - 2026-02-20
 ### Added
 - Complexity level indicators in inlay hints (e.g., "15 (High)" instead of just "15")
-- Header and description section in Complexity Analysis tool window
-- Empty state messages with helpful guidance in tool window
-- Configuration validation to prevent invalid complexity thresholds
 - Kotlin control flow visibility toggles (if, when, for, while, try expressions)
-- Real-time input validation in settings with visual feedback (red border and tooltips)
-- Notification dialog when settings are automatically corrected for invalid threshold values
-- Input validation with user-friendly error dialogs in settings UI
-- Automatic configuration validation when loading settings from disk
+- Configuration validation with real-time feedback, visual indicators, and automatic correction
+- Enhanced Complexity Analysis tool window with header, descriptions, and empty states
 
 ### Changed
-- Complexity level descriptions now use professional terminology (Low, Normal, High, Extreme)
-- Inlay hints now display in bold font for better readability
-- Settings dialog labels simplified for clarity (e.g., "Color: Low" instead of "Complexity color low")
-- Tool window status messages improved with better user feedback
-- Improved complexity color calculation with division-by-zero prevention
-- Reusable MetricsParser instance in ComplexityAnalysisService to reduce object allocation
-- Minimum platform version updated to IntelliJ IDEA 2024.3 for better compatibility
+- Professional terminology for complexity levels (Low, Normal, High, Extreme)
+- Bold font for inlay hints to improve readability
+- Simplified settings dialog labels (e.g., "Color: Low" instead of "Complexity color low")
+- Minimum platform version to IntelliJ IDEA 2024.3 for better compatibility
 
 ### Fixed
-- Settings dialog no longer shows excessive vertical whitespace in Basics and Miscellaneous tabs
-- Settings panel now uses per-tab scrolling instead of outer scroll pane
+- Settings dialog vertical whitespace in Basics and Miscellaneous tabs (implemented per-tab scrolling)
 - Complexity hints now appear immediately for files already open when plugin loads
-- Settings dialog no longer shows error messages in wrong IDE window
-- Invalid input in settings fields is now properly prevented and highlighted
-- Kotlin property metrics toggle not being respected in handler registration
-- Potential division-by-zero errors in color interpolation when thresholds are equal
-- Silent acceptance of invalid numeric input in configuration fields
-- Missing configuration validation in InlayManager and ComplexityAnalysisService
-- Cascading validation logic ensuring strict threshold ordering (low < normal < high < extreme)
+- PSI access thread safety issues with proper ReadAction wrapping
+- Configuration validation with strict threshold ordering (low < normal < high < extreme)
+- Division-by-zero errors in color interpolation when thresholds are equal
 
 ## [0.1.8] - 2025-09-18
 ### Added
