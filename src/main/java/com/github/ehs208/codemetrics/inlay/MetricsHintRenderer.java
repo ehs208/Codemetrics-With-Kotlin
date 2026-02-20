@@ -21,8 +21,27 @@ public class MetricsHintRenderer extends HintRenderer {
   private boolean highlighted;
 
   MetricsHintRenderer(MetricsModel model) {
-    super(model.toString(MetricsConfiguration.getInstance()));
+    super(formatComplexityText(model));
     this.model = model;
+  }
+
+  private static String formatComplexityText(MetricsModel model) {
+    long complexity = model.getCollectedComplexity();
+    MetricsConfiguration config = MetricsConfiguration.getInstance();
+
+    String level;
+    if (complexity < config.complexityLevelNormal) {
+      level = config.complexityLevelLowDescription;
+    } else if (complexity < config.complexityLevelHigh) {
+      level = config.complexityLevelNormalDescription;
+    } else if (complexity < config.complexityLevelExtreme) {
+      level = config.complexityLevelHighDescription;
+    } else {
+      level = config.complexityLevelExtremeDescription;
+    }
+
+    // Format: "15 (High)"
+    return complexity + " (" + level + ")";
   }
 
   protected TextAttributes getTextAttributes(@NotNull Editor editor) {
@@ -59,6 +78,9 @@ public class MetricsHintRenderer extends HintRenderer {
             fontColor.getBlue(),
             (int) (fontColor.getAlpha() * highlightMultiplier)));
     clone.setBackgroundColor(backgroundColorWithAlpha);
+
+    // Enhancement: Use bold font for better readability
+    clone.setFontType(Font.BOLD);
 
     return clone;
   }

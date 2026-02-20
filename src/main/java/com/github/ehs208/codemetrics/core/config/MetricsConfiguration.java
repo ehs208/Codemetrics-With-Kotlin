@@ -140,10 +140,10 @@ public class MetricsConfiguration implements PersistentStateComponent<MetricsCon
 
   public int hiddenUnder = 3;
 
-  public String complexityLevelExtremeDescription = "Bloody hell...";
-  public String complexityLevelHighDescription = "You must be kidding";
-  public String complexityLevelNormalDescription = "It's time to do something...";
-  public String complexityLevelLowDescription = "Everything is cool!";
+  public String complexityLevelExtremeDescription = "Extreme";
+  public String complexityLevelHighDescription = "High";
+  public String complexityLevelNormalDescription = "Normal";
+  public String complexityLevelLowDescription = "Low";
   public String complexityTemplate = "Complexity is {0} {1}";
 
   public int anonymousClass = 1;
