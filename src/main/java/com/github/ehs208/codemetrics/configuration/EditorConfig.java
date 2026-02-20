@@ -4,9 +4,15 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ColorPanel;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.util.ui.FormBuilder;
+import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +23,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class EditorConfig implements Configurable {
+public class EditorConfig implements Configurable, Configurable.NoScroll {
   private final MetricsConfiguration configuration;
   private final MetricsConfiguration baseConfiguration = new MetricsConfiguration();
   private java.util.List<BeanField> basicFields;
@@ -35,49 +41,49 @@ public class EditorConfig implements Configurable {
         basicFields,
         () -> configuration.complexityColorLow,
         v -> configuration.complexityColorLow = v,
-        "Complexity color low");
+        "Color: Low");
     colorPicker(
         basicFields,
         () -> configuration.complexityColorNormal,
         v -> configuration.complexityColorNormal = v,
-        "Complexity color normal");
+        "Color: Normal");
     colorPicker(
         basicFields,
         () -> configuration.complexityColorHigh,
         v -> configuration.complexityColorHigh = v,
-        "Complexity color high");
+        "Color: High");
     colorPicker(
         basicFields,
         () -> configuration.complexityColorExtreme,
         v -> configuration.complexityColorExtreme = v,
-        "Complexity color extreme");
+        "Color: Extreme");
 
     numeric(
         basicFields,
         () -> configuration.complexityLevelLow,
         v -> configuration.complexityLevelLow = v,
-        "Complexity level low");
+        "Threshold: Low");
     numeric(
         basicFields,
         () -> configuration.complexityLevelNormal,
         v -> configuration.complexityLevelNormal = v,
-        "Complexity level normal");
+        "Threshold: Normal");
     numeric(
         basicFields,
         () -> configuration.complexityLevelHigh,
         v -> configuration.complexityLevelHigh = v,
-        "Complexity level high");
+        "Threshold: High");
     numeric(
         basicFields,
         () -> configuration.complexityLevelExtreme,
         v -> configuration.complexityLevelExtreme = v,
-        "Complexity level extreme");
+        "Threshold: Extreme");
 
     numeric(
         basicFields,
         () -> configuration.hiddenUnder,
         v -> configuration.hiddenUnder = v,
-        "Show metrics above complexity");
+        "Minimum complexity to display");
 
     checkBox(
         basicFields,
@@ -152,27 +158,27 @@ public class EditorConfig implements Configurable {
         advancedFields,
         () -> configuration.complexityLevelExtremeDescription,
         (v) -> configuration.complexityLevelExtremeDescription = v,
-        "Description for extreme complexity");
+        "Description: Extreme");
     text(
         advancedFields,
         () -> configuration.complexityLevelHighDescription,
         (v) -> configuration.complexityLevelHighDescription = v,
-        "Description for high complexity");
+        "Description: High");
     text(
         advancedFields,
         () -> configuration.complexityLevelNormalDescription,
         (v) -> configuration.complexityLevelNormalDescription = v,
-        "Description for normal complexity");
+        "Description: Normal");
     text(
         advancedFields,
         () -> configuration.complexityLevelLowDescription,
         (v) -> configuration.complexityLevelLowDescription = v,
-        "Description for low complexity");
+        "Description: Low");
     text(
         advancedFields,
         () -> configuration.complexityTemplate,
         (v) -> configuration.complexityTemplate = v,
-        "Template of complexity description");
+        "Complexity display template");
 
     numeric(
         advancedFields,
@@ -1299,31 +1305,392 @@ public class EditorConfig implements Configurable {
   public JComponent createComponent() {
     JTabbedPane tabbedPane = new JBTabbedPane();
 
-    final JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    // Create Basics tab using FormBuilder for proper layout
+    FormBuilder basicsBuilder = FormBuilder.createFormBuilder();
+    basicsBuilder.setFormLeftIndent(12);
 
-    for (BeanField field : basicFields) {
-      panel.add(field.getComponent());
+    // Color Configuration section
+    basicsBuilder.addComponent(new TitledSeparator("Color Configuration"));
+    addFieldsToBuilder(basicsBuilder, basicFields, 0, 4,
+        "Configure the colors used for different complexity levels");
+
+    // Complexity Thresholds section
+    basicsBuilder.addSeparator(12);
+    basicsBuilder.addComponent(new TitledSeparator("Complexity Thresholds"));
+    addFieldsToBuilder(basicsBuilder, basicFields, 4, 8,
+        "Define the complexity values that determine color coding");
+
+    // Visibility Controls section
+    basicsBuilder.addSeparator(12);
+    basicsBuilder.addComponent(new TitledSeparator("Visibility Controls"));
+    addFieldsToBuilder(basicsBuilder, basicFields, 8, 9,
+        "Control when metrics are displayed");
+    addFieldsToBuilder(basicsBuilder, basicFields, 9, 13,
+        "Java language elements");
+    addFieldsToBuilder(basicsBuilder, basicFields, 13, basicFields.size(),
+        "Kotlin language elements");
+
+    JPanel basicsPanel = basicsBuilder
+        .addComponentFillVertically(new JPanel(), 0)
+        .getPanel();
+
+    // Wrap in scroll pane for independent scrolling (Configurable.NoScroll removes outer scroll)
+    JBScrollPane basicsScroll = new JBScrollPane(basicsPanel);
+    basicsScroll.setBorder(JBUI.Borders.empty());
+    basicsScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+    // Create Advanced tab using FormBuilder for proper layout
+    FormBuilder advancedBuilder = FormBuilder.createFormBuilder();
+    advancedBuilder.setFormLeftIndent(12);
+
+    // Complexity Templates section
+    advancedBuilder.addComponent(new TitledSeparator("Complexity Templates"));
+    addFieldsToBuilder(advancedBuilder, advancedFields, 0, 5,
+        "Customize the text displayed for complexity hints");
+
+    // Element Complexity Weights section
+    advancedBuilder.addSeparator(12);
+    advancedBuilder.addComponent(new TitledSeparator("Element Complexity Weights"));
+    addFieldsToBuilder(advancedBuilder, advancedFields, 5, advancedFields.size(),
+        "Configure complexity values for individual PSI elements");
+
+    JPanel advancedPanel = advancedBuilder
+        .addComponentFillVertically(new JPanel(), 0)
+        .getPanel();
+
+    // Wrap in scroll pane for independent scrolling (Configurable.NoScroll removes outer scroll)
+    JBScrollPane advancedScroll = new JBScrollPane(advancedPanel);
+    advancedScroll.setBorder(JBUI.Borders.empty());
+    advancedScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+    // Create Miscellaneous tab using FormBuilder for proper layout
+    FormBuilder miscBuilder = FormBuilder.createFormBuilder();
+    miscBuilder.setFormLeftIndent(12);
+
+    // Element Descriptions section
+    miscBuilder.addComponent(new TitledSeparator("Element Descriptions"));
+    addFieldsToBuilder(miscBuilder, miscFields, 0, miscFields.size(),
+        "Customize the description text for individual PSI elements");
+
+    JPanel miscPanel = miscBuilder
+        .addComponentFillVertically(new JPanel(), 0)
+        .getPanel();
+
+    // Wrap in scroll pane for independent scrolling (Configurable.NoScroll removes outer scroll)
+    JBScrollPane miscScroll = new JBScrollPane(miscPanel);
+    miscScroll.setBorder(JBUI.Borders.empty());
+    miscScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+    // Add tabs with their own scroll panes (per-tab scrolling)
+    tabbedPane.add("Basics", basicsScroll);
+    tabbedPane.add("Advanced", advancedScroll);
+    tabbedPane.add("Miscellaneous", miscScroll);
+
+    // Create main container with Reset to Defaults button
+    JPanel mainContainer = new JPanel(new BorderLayout());
+    mainContainer.add(tabbedPane, BorderLayout.CENTER);
+
+    // Create button panel at the bottom
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    buttonPanel.setBorder(JBUI.Borders.empty(8, 12, 8, 12));
+
+    JButton resetButton = new JButton("Reset to Defaults");
+    resetButton.addActionListener(e -> resetToDefaults());
+    buttonPanel.add(resetButton);
+
+    mainContainer.add(buttonPanel, BorderLayout.SOUTH);
+
+    return mainContainer;
+  }
+
+  private void resetToDefaults() {
+    // Show confirmation dialog
+    int result = javax.swing.JOptionPane.showConfirmDialog(
+        null,
+        "Are you sure you want to reset all settings to defaults? This cannot be undone.",
+        "Reset to Defaults",
+        javax.swing.JOptionPane.YES_NO_OPTION,
+        javax.swing.JOptionPane.WARNING_MESSAGE);
+
+    if (result == javax.swing.JOptionPane.YES_OPTION) {
+      // Create a new instance to get default values
+      MetricsConfiguration defaults = new MetricsConfiguration();
+
+      // Copy all default values to current configuration
+      configuration.complexityColorLow = defaults.complexityColorLow;
+      configuration.complexityColorNormal = defaults.complexityColorNormal;
+      configuration.complexityColorHigh = defaults.complexityColorHigh;
+      configuration.complexityColorExtreme = defaults.complexityColorExtreme;
+
+      configuration.complexityLevelLow = defaults.complexityLevelLow;
+      configuration.complexityLevelNormal = defaults.complexityLevelNormal;
+      configuration.complexityLevelHigh = defaults.complexityLevelHigh;
+      configuration.complexityLevelExtreme = defaults.complexityLevelExtreme;
+
+      configuration.hiddenUnder = defaults.hiddenUnder;
+
+      configuration.metricsForAnonymousClass = defaults.metricsForAnonymousClass;
+      configuration.metricsForAClass = defaults.metricsForAClass;
+      configuration.metricsForMethod = defaults.metricsForMethod;
+      configuration.metricsForLambdaExpression = defaults.metricsForLambdaExpression;
+
+      configuration.metricsForKotlinClass = defaults.metricsForKotlinClass;
+      configuration.metricsForKotlinFunction = defaults.metricsForKotlinFunction;
+      configuration.metricsForKotlinProperty = defaults.metricsForKotlinProperty;
+      configuration.metricsForKotlinLambda = defaults.metricsForKotlinLambda;
+      configuration.metricsForKotlinIf = defaults.metricsForKotlinIf;
+      configuration.metricsForKotlinWhen = defaults.metricsForKotlinWhen;
+      configuration.metricsForKotlinFor = defaults.metricsForKotlinFor;
+      configuration.metricsForKotlinWhile = defaults.metricsForKotlinWhile;
+      configuration.metricsForKotlinTry = defaults.metricsForKotlinTry;
+
+      configuration.complexityLevelExtremeDescription = defaults.complexityLevelExtremeDescription;
+      configuration.complexityLevelHighDescription = defaults.complexityLevelHighDescription;
+      configuration.complexityLevelNormalDescription = defaults.complexityLevelNormalDescription;
+      configuration.complexityLevelLowDescription = defaults.complexityLevelLowDescription;
+      configuration.complexityTemplate = defaults.complexityTemplate;
+
+      configuration.anonymousClass = defaults.anonymousClass;
+      configuration.arrayAccessExpression = defaults.arrayAccessExpression;
+      configuration.arrayInitializerExpression = defaults.arrayInitializerExpression;
+      configuration.assertStatement = defaults.assertStatement;
+      configuration.assignmentExpression = defaults.assignmentExpression;
+      configuration.binaryExpression = defaults.binaryExpression;
+      configuration.blockStatement = defaults.blockStatement;
+      configuration.breakStatement = defaults.breakStatement;
+      configuration.aClass = defaults.aClass;
+      configuration.classInitializer = defaults.classInitializer;
+      configuration.classObjectAccessExpression = defaults.classObjectAccessExpression;
+      configuration.codeBlock = defaults.codeBlock;
+      configuration.conditionalExpression = defaults.conditionalExpression;
+      configuration.continueStatement = defaults.continueStatement;
+      configuration.declarationStatement = defaults.declarationStatement;
+      configuration.docComment = defaults.docComment;
+      configuration.docTag = defaults.docTag;
+      configuration.doWhileStatement = defaults.doWhileStatement;
+      configuration.emptyStatement = defaults.emptyStatement;
+      configuration.expressionList = defaults.expressionList;
+      configuration.expressionListStatement = defaults.expressionListStatement;
+      configuration.expressionStatement = defaults.expressionStatement;
+      configuration.field = defaults.field;
+      configuration.forStatement = defaults.forStatement;
+      configuration.foreachStatement = defaults.foreachStatement;
+      configuration.ifStatement = defaults.ifStatement;
+      configuration.importList = defaults.importList;
+      configuration.importStatement = defaults.importStatement;
+      configuration.importStaticStatement = defaults.importStaticStatement;
+      configuration.inlineDocTag = defaults.inlineDocTag;
+      configuration.instanceOfExpression = defaults.instanceOfExpression;
+      configuration.labeledStatement = defaults.labeledStatement;
+      configuration.literalExpression = defaults.literalExpression;
+      configuration.localVariable = defaults.localVariable;
+      configuration.method = defaults.method;
+      configuration.methodCallExpression = defaults.methodCallExpression;
+      configuration.modifierList = defaults.modifierList;
+      configuration.newExpression = defaults.newExpression;
+      configuration.packageStatement = defaults.packageStatement;
+      configuration.parameter = defaults.parameter;
+      configuration.receiverParameter = defaults.receiverParameter;
+      configuration.parameterList = defaults.parameterList;
+      configuration.postfixExpression = defaults.postfixExpression;
+      configuration.prefixExpression = defaults.prefixExpression;
+      configuration.referenceParameterList = defaults.referenceParameterList;
+      configuration.typeParameterList = defaults.typeParameterList;
+      configuration.returnStatement = defaults.returnStatement;
+      configuration.superExpression = defaults.superExpression;
+      configuration.switchLabelStatement = defaults.switchLabelStatement;
+      configuration.switchStatement = defaults.switchStatement;
+      configuration.synchronizedStatement = defaults.synchronizedStatement;
+      configuration.thisExpression = defaults.thisExpression;
+      configuration.throwStatement = defaults.throwStatement;
+      configuration.tryStatement = defaults.tryStatement;
+      configuration.catchSection = defaults.catchSection;
+      configuration.resourceList = defaults.resourceList;
+      configuration.resourceVariable = defaults.resourceVariable;
+      configuration.resourceExpression = defaults.resourceExpression;
+      configuration.typeCastExpression = defaults.typeCastExpression;
+      configuration.whileStatement = defaults.whileStatement;
+      configuration.typeParameter = defaults.typeParameter;
+      configuration.annotation = defaults.annotation;
+      configuration.annotationParameterList = defaults.annotationParameterList;
+      configuration.annotationArrayInitializer = defaults.annotationArrayInitializer;
+      configuration.nameValuePair = defaults.nameValuePair;
+      configuration.annotationMethod = defaults.annotationMethod;
+      configuration.enumConstant = defaults.enumConstant;
+      configuration.enumConstantInitializer = defaults.enumConstantInitializer;
+      configuration.polyadicExpression = defaults.polyadicExpression;
+      configuration.lambdaExpression = defaults.lambdaExpression;
+      configuration.module = defaults.module;
+      configuration.requiresStatement = defaults.requiresStatement;
+      configuration.usesStatement = defaults.usesStatement;
+      configuration.providesStatement = defaults.providesStatement;
+      configuration.methodRefExpression = defaults.methodRefExpression;
+      configuration.type = defaults.type;
+      configuration.diamondType = defaults.diamondType;
+      configuration.importStaticReference = defaults.importStaticReference;
+      configuration.providesWithList = defaults.providesWithList;
+      configuration.opensStatement = defaults.opensStatement;
+      configuration.exportsStatement = defaults.exportsStatement;
+      configuration.throwsList = defaults.throwsList;
+      configuration.extendsBoundList = defaults.extendsBoundList;
+      configuration.implementsList = defaults.implementsList;
+      configuration.extendsList = defaults.extendsList;
+      configuration.emptyExpression = defaults.emptyExpression;
+      configuration.switchExpression = defaults.switchExpression;
+      configuration.switchLabeledRule = defaults.switchLabeledRule;
+      configuration.moduleReference = defaults.moduleReference;
+      configuration.javaCodeReference = defaults.javaCodeReference;
+      configuration.referenceExpression = defaults.referenceExpression;
+      configuration.parenthExpression = defaults.parenthExpression;
+      configuration.docMethodOrFieldRef = defaults.docMethodOrFieldRef;
+      configuration.docParameterRef = defaults.docParameterRef;
+      configuration.docTagValueElement = defaults.docTagValueElement;
+      configuration.docReferenceHolder = defaults.docReferenceHolder;
+      configuration.docTypeHolder = defaults.docTypeHolder;
+
+      configuration.kotlinClass = defaults.kotlinClass;
+      configuration.kotlinFunction = defaults.kotlinFunction;
+      configuration.kotlinProperty = defaults.kotlinProperty;
+      configuration.kotlinIfExpression = defaults.kotlinIfExpression;
+      configuration.kotlinWhenExpression = defaults.kotlinWhenExpression;
+      configuration.kotlinForLoop = defaults.kotlinForLoop;
+      configuration.kotlinWhileLoop = defaults.kotlinWhileLoop;
+      configuration.kotlinTryExpression = defaults.kotlinTryExpression;
+      configuration.kotlinLambdaExpression = defaults.kotlinLambdaExpression;
+      configuration.kotlinElvisExpression = defaults.kotlinElvisExpression;
+
+      configuration.anonymousClassDescription = defaults.anonymousClassDescription;
+      configuration.arrayAccessExpressionDescription = defaults.arrayAccessExpressionDescription;
+      configuration.arrayInitializerExpressionDescription = defaults.arrayInitializerExpressionDescription;
+      configuration.assertStatementDescription = defaults.assertStatementDescription;
+      configuration.assignmentExpressionDescription = defaults.assignmentExpressionDescription;
+      configuration.binaryExpressionDescription = defaults.binaryExpressionDescription;
+      configuration.blockStatementDescription = defaults.blockStatementDescription;
+      configuration.breakStatementDescription = defaults.breakStatementDescription;
+      configuration.aClassDescription = defaults.aClassDescription;
+      configuration.classInitializerDescription = defaults.classInitializerDescription;
+      configuration.classObjectAccessExpressionDescription = defaults.classObjectAccessExpressionDescription;
+      configuration.codeBlockDescription = defaults.codeBlockDescription;
+      configuration.conditionalExpressionDescription = defaults.conditionalExpressionDescription;
+      configuration.continueStatementDescription = defaults.continueStatementDescription;
+      configuration.declarationStatementDescription = defaults.declarationStatementDescription;
+      configuration.docCommentDescription = defaults.docCommentDescription;
+      configuration.docTagDescription = defaults.docTagDescription;
+      configuration.doWhileStatementDescription = defaults.doWhileStatementDescription;
+      configuration.emptyStatementDescription = defaults.emptyStatementDescription;
+      configuration.expressionListDescription = defaults.expressionListDescription;
+      configuration.expressionListStatementDescription = defaults.expressionListStatementDescription;
+      configuration.expressionStatementDescription = defaults.expressionStatementDescription;
+      configuration.fieldDescription = defaults.fieldDescription;
+      configuration.forStatementDescription = defaults.forStatementDescription;
+      configuration.foreachStatementDescription = defaults.foreachStatementDescription;
+      configuration.ifStatementDescription = defaults.ifStatementDescription;
+      configuration.importListDescription = defaults.importListDescription;
+      configuration.importStatementDescription = defaults.importStatementDescription;
+      configuration.importStaticStatementDescription = defaults.importStaticStatementDescription;
+      configuration.inlineDocTagDescription = defaults.inlineDocTagDescription;
+      configuration.instanceOfExpressionDescription = defaults.instanceOfExpressionDescription;
+      configuration.labeledStatementDescription = defaults.labeledStatementDescription;
+      configuration.literalExpressionDescription = defaults.literalExpressionDescription;
+      configuration.localVariableDescription = defaults.localVariableDescription;
+      configuration.methodDescription = defaults.methodDescription;
+      configuration.methodCallExpressionDescription = defaults.methodCallExpressionDescription;
+      configuration.modifierListDescription = defaults.modifierListDescription;
+      configuration.newExpressionDescription = defaults.newExpressionDescription;
+      configuration.packageStatementDescription = defaults.packageStatementDescription;
+      configuration.parameterDescription = defaults.parameterDescription;
+      configuration.receiverParameterDescription = defaults.receiverParameterDescription;
+      configuration.parameterListDescription = defaults.parameterListDescription;
+      configuration.postfixExpressionDescription = defaults.postfixExpressionDescription;
+      configuration.prefixExpressionDescription = defaults.prefixExpressionDescription;
+      configuration.referenceParameterListDescription = defaults.referenceParameterListDescription;
+      configuration.typeParameterListDescription = defaults.typeParameterListDescription;
+      configuration.returnStatementDescription = defaults.returnStatementDescription;
+      configuration.superExpressionDescription = defaults.superExpressionDescription;
+      configuration.switchLabelStatementDescription = defaults.switchLabelStatementDescription;
+      configuration.switchStatementDescription = defaults.switchStatementDescription;
+      configuration.synchronizedStatementDescription = defaults.synchronizedStatementDescription;
+      configuration.thisExpressionDescription = defaults.thisExpressionDescription;
+      configuration.throwStatementDescription = defaults.throwStatementDescription;
+      configuration.tryStatementDescription = defaults.tryStatementDescription;
+      configuration.catchSectionDescription = defaults.catchSectionDescription;
+      configuration.resourceListDescription = defaults.resourceListDescription;
+      configuration.resourceVariableDescription = defaults.resourceVariableDescription;
+      configuration.resourceExpressionDescription = defaults.resourceExpressionDescription;
+      configuration.typeCastExpressionDescription = defaults.typeCastExpressionDescription;
+      configuration.whileStatementDescription = defaults.whileStatementDescription;
+      configuration.typeParameterDescription = defaults.typeParameterDescription;
+      configuration.annotationDescription = defaults.annotationDescription;
+      configuration.annotationParameterListDescription = defaults.annotationParameterListDescription;
+      configuration.annotationArrayInitializerDescription = defaults.annotationArrayInitializerDescription;
+      configuration.nameValuePairDescription = defaults.nameValuePairDescription;
+      configuration.annotationMethodDescription = defaults.annotationMethodDescription;
+      configuration.enumConstantDescription = defaults.enumConstantDescription;
+      configuration.enumConstantInitializerDescription = defaults.enumConstantInitializerDescription;
+      configuration.polyadicExpressionDescription = defaults.polyadicExpressionDescription;
+      configuration.lambdaExpressionDescription = defaults.lambdaExpressionDescription;
+      configuration.moduleDescription = defaults.moduleDescription;
+      configuration.requiresStatementDescription = defaults.requiresStatementDescription;
+      configuration.usesStatementDescription = defaults.usesStatementDescription;
+      configuration.providesStatementDescription = defaults.providesStatementDescription;
+      configuration.methodRefExpressionDescription = defaults.methodRefExpressionDescription;
+      configuration.typeDescription = defaults.typeDescription;
+      configuration.diamondTypeDescription = defaults.diamondTypeDescription;
+      configuration.importStaticReferenceDescription = defaults.importStaticReferenceDescription;
+      configuration.providesWithListDescription = defaults.providesWithListDescription;
+      configuration.opensStatementDescription = defaults.opensStatementDescription;
+      configuration.exportsStatementDescription = defaults.exportsStatementDescription;
+      configuration.throwsListDescription = defaults.throwsListDescription;
+      configuration.extendsBoundListDescription = defaults.extendsBoundListDescription;
+      configuration.implementsListDescription = defaults.implementsListDescription;
+      configuration.extendsListDescription = defaults.extendsListDescription;
+      configuration.emptyExpressionDescription = defaults.emptyExpressionDescription;
+      configuration.switchExpressionDescription = defaults.switchExpressionDescription;
+      configuration.switchLabeledRuleDescription = defaults.switchLabeledRuleDescription;
+      configuration.moduleReferenceDescription = defaults.moduleReferenceDescription;
+      configuration.javaCodeReferenceDescription = defaults.javaCodeReferenceDescription;
+      configuration.referenceExpressionDescription = defaults.referenceExpressionDescription;
+      configuration.parenthExpressionDescription = defaults.parenthExpressionDescription;
+      configuration.docMethodOrFieldRefDescription = defaults.docMethodOrFieldRefDescription;
+      configuration.docParameterRefDescription = defaults.docParameterRefDescription;
+      configuration.docTagValueElementDescription = defaults.docTagValueElementDescription;
+      configuration.docReferenceHolderDescription = defaults.docReferenceHolderDescription;
+      configuration.docTypeHolderDescription = defaults.docTypeHolderDescription;
+      configuration.kotlinClassDescription = defaults.kotlinClassDescription;
+      configuration.kotlinFunctionDescription = defaults.kotlinFunctionDescription;
+      configuration.kotlinPropertyDescription = defaults.kotlinPropertyDescription;
+      configuration.kotlinIfExpressionDescription = defaults.kotlinIfExpressionDescription;
+      configuration.kotlinWhenExpressionDescription = defaults.kotlinWhenExpressionDescription;
+      configuration.kotlinForLoopDescription = defaults.kotlinForLoopDescription;
+      configuration.kotlinWhileLoopDescription = defaults.kotlinWhileLoopDescription;
+      configuration.kotlinTryExpressionDescription = defaults.kotlinTryExpressionDescription;
+      configuration.kotlinLambdaExpressionDescription = defaults.kotlinLambdaExpressionDescription;
+      configuration.kotlinElvisExpressionDescription = defaults.kotlinElvisExpressionDescription;
+
+      // Refresh all UI fields to show the new values
+      basicFields.forEach(BeanField::reset);
+      advancedFields.forEach(BeanField::reset);
+      miscFields.forEach(BeanField::reset);
+
+      // Notify listeners to update the editor
+      configuration.notifyListeners();
+    }
+  }
+
+  private void addFieldsToBuilder(FormBuilder builder, java.util.List<BeanField> fields,
+                                    int start, int end, String helpText) {
+    if (helpText != null && !helpText.isEmpty()) {
+      JBLabel help = new JBLabel(helpText);
+      help.setForeground(JBColor.namedColor("Label.infoForeground",
+          new JBColor(0x808080, 0x8C8C8C)));
+      help.setFont(help.getFont().deriveFont(11f));
+      help.setBorder(JBUI.Borders.emptyLeft(8));
+      builder.addComponent(help);
     }
 
-    final JPanel advanced = new JPanel();
-    advanced.setLayout(new BoxLayout(advanced, BoxLayout.Y_AXIS));
-
-    for (BeanField field : advancedFields) {
-      advanced.add(field.getComponent());
+    for (int i = start; i < Math.min(end, fields.size()); i++) {
+      builder.addComponent(fields.get(i).getComponent());
     }
-
-    final JPanel misc = new JPanel();
-    misc.setLayout(new BoxLayout(misc, BoxLayout.Y_AXIS));
-    for (BeanField field : miscFields) {
-      misc.add(field.getComponent());
-    }
-
-    tabbedPane.add("Basics", panel);
-    tabbedPane.add("Advanced", advanced);
-    tabbedPane.add("Miscellaneous", misc);
-
-    return tabbedPane;
   }
 
   public boolean isModified() {
@@ -1491,6 +1858,7 @@ public class EditorConfig implements Configurable {
     JPanel createComponent() {
       JPanel jPanel = new JPanel();
       jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
 
       JLabel label = new JLabel(title);
       label.setPreferredSize(new Dimension(300, 25));
@@ -1498,11 +1866,12 @@ public class EditorConfig implements Configurable {
       label.setMaximumSize(new Dimension(300, 25));
 
       jPanel.add(label);
-      jPanel.add(Box.createHorizontalStrut(8));
+      jPanel.add(Box.createHorizontalStrut(12));
       jPanel.add(colorPanel);
       jPanel.add(Box.createHorizontalGlue());
 
-      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       return jPanel;
     }
 
@@ -1559,6 +1928,7 @@ public class EditorConfig implements Configurable {
     JPanel createComponent() {
       JPanel jPanel = new JPanel();
       jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
 
       JLabel label = new JLabel(title);
       label.setPreferredSize(new Dimension(300, 25));
@@ -1569,11 +1939,12 @@ public class EditorConfig implements Configurable {
       jbTextField.setMaximumSize(new Dimension(100, 25));
 
       jPanel.add(label);
-      jPanel.add(Box.createHorizontalStrut(8));
+      jPanel.add(Box.createHorizontalStrut(12));
       jPanel.add(jbTextField);
       jPanel.add(Box.createHorizontalGlue());
 
-      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       return jPanel;
     }
 
@@ -1620,6 +1991,7 @@ public class EditorConfig implements Configurable {
     JPanel createComponent() {
       JPanel jPanel = new JPanel();
       jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
 
       JLabel label = new JLabel(title);
       label.setPreferredSize(new Dimension(300, 25));
@@ -1630,11 +2002,12 @@ public class EditorConfig implements Configurable {
       jbTextField.setMaximumSize(new Dimension(400, 25));
 
       jPanel.add(label);
-      jPanel.add(Box.createHorizontalStrut(8));
+      jPanel.add(Box.createHorizontalStrut(12));
       jPanel.add(jbTextField);
       jPanel.add(Box.createHorizontalGlue());
 
-      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       return jPanel;
     }
 
@@ -1664,6 +2037,7 @@ public class EditorConfig implements Configurable {
     JPanel createComponent() {
       JPanel jPanel = new JPanel();
       jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
 
       jbCheckBox.setPreferredSize(new Dimension(20, 25));
       jbCheckBox.setMaximumSize(new Dimension(20, 25));
@@ -1671,11 +2045,12 @@ public class EditorConfig implements Configurable {
       JLabel label = new JLabel(title);
 
       jPanel.add(jbCheckBox);
-      jPanel.add(Box.createHorizontalStrut(8));
+      jPanel.add(Box.createHorizontalStrut(12));
       jPanel.add(label);
       jPanel.add(Box.createHorizontalGlue());
 
-      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       return jPanel;
     }
 
