@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -44,6 +45,7 @@ intellijPlatform {
     pluginVerification {
         ides {
             create(properties("platformType"), properties("platformVersion"))
+            create(IntelliJPlatformType.IntellijIdea, "261.21525.39")
         }
     }
 }
