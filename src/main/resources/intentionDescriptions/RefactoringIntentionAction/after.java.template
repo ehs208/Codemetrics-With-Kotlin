@@ -1,0 +1,13 @@
+public String processData(List<Item> items, boolean validate) {
+    return items.stream()
+        .map(item -> validate ? formatValidated(item) : item.toString())
+        .collect(Collectors.joining());
+}
+
+private String formatValidated(Item item) {
+    if (item.getName() == null || item.getName().isEmpty()) {
+        return "";
+    }
+    String value = item.getValue() > 0 ? String.valueOf(item.getValue()) : "default";
+    return item.getName() + ": " + value;
+}

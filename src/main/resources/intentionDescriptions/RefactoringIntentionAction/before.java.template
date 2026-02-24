@@ -1,0 +1,17 @@
+public String processData(List<Item> items, boolean validate) {
+    StringBuilder result = new StringBuilder();
+    for (Item item : items) {
+        if (validate) {
+            if (item.getName() != null && !item.getName().isEmpty()) {
+                if (item.getValue() > 0) {
+                    result.append(item.getName()).append(": ").append(item.getValue());
+                } else {
+                    result.append(item.getName()).append(": default");
+                }
+            }
+        } else {
+            result.append(item.toString());
+        }
+    }
+    return result.toString();
+}
