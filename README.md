@@ -13,7 +13,9 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 ## Features
 - Real-time cyclomatic complexity calculation for **Java and Kotlin**
 - Inline complexity hints in the editor with color-coded severity
-- **Project-wide complexity analysis** tool window for code overview
+- **AI-powered refactoring suggestions** via Claude, OpenAI, Gemini, or Codex (ChatGPT OAuth)
+- **Project-wide complexity analysis** tool window with batch refactoring support
+- **Refactoring diff viewer** with side-by-side comparison and one-click apply
 - Customizable thresholds and colors with automatic validation
 - Click on hints to see detailed breakdowns
 - **Full Kotlin K2 compiler mode support**
@@ -36,13 +38,23 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 
 **Note**: The plugin automatically validates configuration to prevent invalid threshold combinations.
 
+### AI Refactoring Settings
+<kbd>Settings/Preferences</kbd> > <kbd>Code Metrics</kbd> > <kbd>AI Refactoring</kbd> tab:
+- **Provider**: Choose from Claude, OpenAI, Gemini, or Codex (ChatGPT OAuth login)
+- **API Key**: Enter your API key (stored securely via IntelliJ PasswordSafe)
+- **Model**: Select model per provider (editable dropdown with defaults)
+- **Custom Prompt**: Add custom instructions appended to the auto-generated prompt
+- **Reasoning Effort** (GPT-5.x only): none / low / medium / high / xhigh
+
 ## Usage
 1. **Inline Hints**: Complexity scores appear as inlay hints next to methods and classes
-2. **Tool Window**: Access project-wide complexity analysis via <kbd>View</kbd> > <kbd>Tool Windows</kbd> > <kbd>Code Complexity</kbd>
+2. **Tool Window**: Access project-wide complexity analysis via <kbd>View</kbd> > <kbd>Tool Windows</kbd> > <kbd>CodeMetrics</kbd>
    - Sortable by complexity score
    - Click to navigate to code
-3. **Interactive**: Click on any complexity hint to see detailed breakdown
-4. **Configuration**: Fine-tune visibility and thresholds in settings - invalid values are automatically corrected
+   - **Suggest Refactoring** for single methods, **Batch Refactoring** for multiple
+3. **AI Refactoring**: Right-click on a complexity hint > **Suggest AI Refactoring**, or use the lightbulb (Alt+Enter) on complex methods
+4. **Interactive**: Click on any complexity hint to see detailed breakdown
+5. **Configuration**: Fine-tune visibility, thresholds, and AI provider settings
 
 ## Supported Platforms
 - **IntelliJ IDEA** 2024.3+
@@ -105,10 +117,4 @@ Licensed under the [MIT License](LICENSE).
 ```
 
 ### Publishing (Maintainers Only)
-```bash
-# Update version in gradle.properties and CHANGELOG.md
-# Then create a tag:
-git tag v0.2.0
-git push origin v0.2.0
-# Auto-publishes to JetBrains Marketplace
-```
+See [Release Workflow](.claude/release-workflow.md) for details.

@@ -5,10 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+## [0.3.0]
 ### Added
+- **AI refactoring** - get AI-powered refactoring suggestions for complex methods via Claude, OpenAI, Gemini, or Codex (ChatGPT login)
+- **Diff viewer** - review AI suggestions side-by-side with original code, with explanation and one-click apply
+- **Batch refactoring** - select multiple methods in the tool window and refactor them at once
+- **Refactoring history** - new History tab in the tool window tracks all AI suggestions
+- **Quick actions** - trigger refactoring from lightbulb (Alt+Enter) or right-click on complexity hints
+- **Complexity re-measurement** - see complexity reduction after applying refactoring
+- **AI configuration** - choose provider/model, set custom prompts, and configure reasoning effort
+
 ### Changed
-### Fixed
-### Removed
+- Tool window renamed from "CodeComplexity" to "CodeMetrics" with new icon
+- Tool window now uses tabbed layout (Analysis + History)
+- Method list supports multi-selection for batch operations
 
 ## [0.2.0] - 2026-02-20
 ### Added

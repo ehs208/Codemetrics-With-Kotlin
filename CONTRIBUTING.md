@@ -173,6 +173,13 @@ Only add to `[Unreleased]`.
 
 ```
 src/main/java/com/github/ehs208/codemetrics/
+├── ai/                    # AI refactoring feature
+│   ├── provider/         # AI provider implementations (Claude, OpenAI, Gemini, Codex)
+│   ├── config/           # AI configuration and API key storage
+│   ├── action/           # Context menu and intention actions
+│   ├── batch/            # Batch refactoring support
+│   ├── history/          # Refactoring history tracking
+│   └── ui/               # Diff viewer dialog
 ├── configuration/         # Settings UI and configuration
 │   └── EditorConfig.java
 ├── core/                  # Core complexity calculation
@@ -187,9 +194,11 @@ src/main/java/com/github/ehs208/codemetrics/
 │   ├── InlayManager.java
 │   ├── EditorListener.java
 │   └── InlayListenerManager.java
-├── toolwindow/           # Complexity tool window
+├── toolwindow/           # Complexity tool window (Analysis + History tabs)
 │   ├── ComplexityToolWindowFactory.java
-│   └── ComplexityAnalysisService.java
+│   ├── ComplexityAnalysisPanel.java
+│   ├── ComplexityAnalysisService.java
+│   └── RefactoringHistoryPanel.java
 └── util/                 # Utilities
 ```
 
