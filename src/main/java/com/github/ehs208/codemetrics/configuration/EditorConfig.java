@@ -1,5 +1,9 @@
 package com.github.ehs208.codemetrics.configuration;
 
+import com.github.ehs208.codemetrics.ai.AiProviderRegistry;
+import com.github.ehs208.codemetrics.ai.AiRefactoringProvider;
+import com.github.ehs208.codemetrics.ai.config.AiRefactoringConfiguration;
+import com.github.ehs208.codemetrics.ai.provider.CodexOAuthProvider;
 import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.util.Comparing;
@@ -29,12 +33,15 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
   private java.util.List<BeanField> basicFields;
   private java.util.List<BeanField> advancedFields;
   private java.util.List<BeanField> miscFields;
+  private java.util.List<BeanField> aiFields;
+  private javax.swing.JTextArea customPromptTextArea;
 
   protected EditorConfig() {
     configuration = MetricsConfiguration.getInstance();
     basicFields = new ArrayList<>();
     advancedFields = new ArrayList<>();
     miscFields = new ArrayList<>();
+    aiFields = new ArrayList<>();
 
     /* basic fields */
     this.colorPicker(
@@ -174,12 +181,6 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         () -> configuration.complexityLevelLowDescription,
         (v) -> configuration.complexityLevelLowDescription = v,
         "Description: Low");
-    text(
-        advancedFields,
-        () -> configuration.complexityTemplate,
-        (v) -> configuration.complexityTemplate = v,
-        "Complexity display template");
-
     numeric(
         advancedFields,
         () -> configuration.anonymousClass,
@@ -1254,6 +1255,50 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         () -> configuration.kotlinElvisExpressionDescription,
         v -> configuration.kotlinElvisExpressionDescription = v,
         baseConfiguration.kotlinElvisExpressionDescription);
+
+    /* AI Refactoring fields */
+    AiRefactoringConfiguration aiConfig = AiRefactoringConfiguration.getInstance();
+
+    // Provider selection
+    comboBox(aiFields, () -> aiConfig.activeProviderId, v -> aiConfig.activeProviderId = v,
+        "AI Provider", new String[]{"Claude", "OpenAI", "Gemini", "Codex"});
+
+    // Claude config
+    aiFields.add(new ApiKeyField(
+        () -> aiConfig.getApiKey("Claude"),
+        v -> aiConfig.setApiKey("Claude", v),
+        "Claude API Key"));
+    comboBox(aiFields, () -> aiConfig.claudeModel, v -> aiConfig.claudeModel = v,
+        "Claude Model", new String[]{"claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929", "claude-opus-4-5-20251101"});
+
+    // OpenAI config
+    aiFields.add(new ApiKeyField(
+        () -> aiConfig.getApiKey("OpenAI"),
+        v -> aiConfig.setApiKey("OpenAI", v),
+        "OpenAI API Key"));
+    comboBox(aiFields, () -> aiConfig.openaiModel, v -> aiConfig.openaiModel = v,
+        "OpenAI Model", new String[]{"gpt-5.2", "gpt-5.2-pro", "gpt-5-mini", "gpt-5-nano", "gpt-5", "gpt-4.1"});
+
+    // Gemini config
+    aiFields.add(new ApiKeyField(
+        () -> aiConfig.getApiKey("Gemini"),
+        v -> aiConfig.setApiKey("Gemini", v),
+        "Gemini API Key"));
+    comboBox(aiFields, () -> aiConfig.geminiModel, v -> aiConfig.geminiModel = v,
+        "Gemini Model", new String[]{"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3-pro-preview"});
+
+    // Codex config
+    comboBox(aiFields, () -> aiConfig.codexModel, v -> aiConfig.codexModel = v,
+        "Codex Model", new String[]{"gpt-5.3-codex", "gpt-5.3-codex-spark", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1-codex", "gpt-5.1", "gpt-5-codex", "gpt-5-codex-mini", "gpt-5"});
+
+    // Behavior settings
+    comboBox(aiFields, () -> aiConfig.reasoningEffort, v -> aiConfig.reasoningEffort = v,
+        "Reasoning Effort (Codex / OpenAI only)", new String[]{"none", "low", "medium", "high", "xhigh"});
+    numeric(aiFields, () -> aiConfig.maxTokens, v -> aiConfig.maxTokens = v, "Max Tokens");
+    checkBox(aiFields, () -> aiConfig.includeClassContext, v -> aiConfig.includeClassContext = v,
+        "Include class context in prompt");
+    numeric(aiFields, () -> aiConfig.intentionThreshold, v -> aiConfig.intentionThreshold = v,
+        "Intention threshold (min complexity for lightbulb)");
   }
 
   private void checkBox(
@@ -1286,6 +1331,11 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       Consumer<Integer> setter,
       String title) {
     fields.add(new ColorPickerField(getter, setter, title));
+  }
+
+  private void comboBox(java.util.List<BeanField> fields, Supplier<String> getter,
+      Consumer<String> setter, String title, String[] items) {
+    fields.add(new ComboBoxField(getter, setter, title, items));
   }
 
   @Nls
@@ -1381,10 +1431,176 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
     miscScroll.setBorder(JBUI.Borders.empty());
     miscScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
+    // Create AI Refactoring tab
+    FormBuilder aiBuilder = FormBuilder.createFormBuilder();
+    aiBuilder.setFormLeftIndent(12);
+
+    // Provider Selection
+    aiBuilder.addComponent(new TitledSeparator("Provider Selection"));
+    addFieldsToBuilder(aiBuilder, aiFields, 0, 1,
+        "Choose which AI provider to use for refactoring suggestions");
+
+    // Claude Configuration
+    aiBuilder.addSeparator(12);
+    aiBuilder.addComponent(new TitledSeparator("Claude (Anthropic)"));
+    addFieldsToBuilder(aiBuilder, aiFields, 1, 3,
+        "Configure Claude API credentials and model");
+
+    // OpenAI Configuration
+    aiBuilder.addSeparator(12);
+    aiBuilder.addComponent(new TitledSeparator("OpenAI"));
+    addFieldsToBuilder(aiBuilder, aiFields, 3, 5,
+        "Configure OpenAI API credentials and model");
+
+    // Gemini Configuration
+    aiBuilder.addSeparator(12);
+    aiBuilder.addComponent(new TitledSeparator("Gemini (Google)"));
+    addFieldsToBuilder(aiBuilder, aiFields, 5, 7,
+        "Configure Gemini API credentials and model");
+
+    // Codex Configuration
+    aiBuilder.addSeparator(12);
+    aiBuilder.addComponent(new TitledSeparator("Codex (ChatGPT Login)"));
+    addFieldsToBuilder(aiBuilder, aiFields, 7, 8,
+        "Configure Codex model (use OAuth login for authentication)");
+
+    // Codex OAuth Login/Logout UI
+    JPanel codexLoginPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
+    codexLoginPanel.setBorder(JBUI.Borders.emptyLeft(8));
+    JButton codexLoginButton = new JButton("Login with ChatGPT");
+    JButton codexLogoutButton = new JButton("Logout");
+    JLabel codexLoginStatus = new JLabel("");
+    codexLoginStatus.setBorder(JBUI.Borders.emptyLeft(12));
+
+    // Check initial login state
+    AiRefactoringProvider codexProvider = AiProviderRegistry.getProvider("Codex");
+    CodexOAuthProvider codexOAuth = codexProvider instanceof CodexOAuthProvider
+        ? (CodexOAuthProvider) codexProvider : null;
+
+    Runnable updateCodexLoginUI = () -> {
+      if (codexOAuth != null && codexOAuth.isLoggedIn()) {
+        codexLoginStatus.setText("Logged in (Account: " + codexOAuth.getAccountId() + ")");
+        codexLoginStatus.setForeground(new JBColor(new Color(0x4bb14f), new Color(0x4bb14f)));
+        codexLogoutButton.setVisible(true);
+        codexLoginButton.setText("Re-login");
+      } else {
+        codexLoginStatus.setText("Not logged in");
+        codexLoginStatus.setForeground(JBColor.GRAY);
+        codexLogoutButton.setVisible(false);
+        codexLoginButton.setText("Login with ChatGPT");
+      }
+    };
+    updateCodexLoginUI.run();
+
+    codexLoginButton.addActionListener(e -> {
+      if (codexOAuth == null) return;
+      codexLoginButton.setEnabled(false);
+      codexLoginStatus.setText("Authenticating...");
+      codexLoginStatus.setForeground(JBColor.GRAY);
+      codexOAuth.startOAuthFlow().thenAccept(success -> {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+          codexLoginButton.setEnabled(true);
+          updateCodexLoginUI.run();
+        });
+      });
+    });
+
+    codexLogoutButton.addActionListener(e -> {
+      if (codexOAuth == null) return;
+      codexOAuth.logout();
+      updateCodexLoginUI.run();
+    });
+
+    codexLoginPanel.add(codexLoginButton);
+    codexLoginPanel.add(codexLogoutButton);
+    codexLoginPanel.add(codexLoginStatus);
+    aiBuilder.addComponent(codexLoginPanel);
+
+    // Behavior
+    aiBuilder.addSeparator(12);
+    aiBuilder.addComponent(new TitledSeparator("Behavior"));
+    addFieldsToBuilder(aiBuilder, aiFields, 8, aiFields.size(),
+        "Configure AI refactoring behavior");
+
+    // Custom Prompt Template
+    JPanel promptPanel = new JPanel(new BorderLayout());
+    promptPanel.setBorder(JBUI.Borders.empty(4, 8));
+    JLabel promptLabel = new JLabel("Custom Prompt Template (optional)");
+    promptLabel.setBorder(JBUI.Borders.emptyBottom(4));
+    AiRefactoringConfiguration aiConfigInstance = AiRefactoringConfiguration.getInstance();
+    customPromptTextArea = new javax.swing.JTextArea(aiConfigInstance.customPromptTemplate, 4, 40);
+    customPromptTextArea.setLineWrap(true);
+    customPromptTextArea.setWrapStyleWord(true);
+    customPromptTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+    JBScrollPane promptScroll = new JBScrollPane(customPromptTextArea);
+    promptScroll.setPreferredSize(new Dimension(400, 100));
+    promptPanel.add(promptLabel, BorderLayout.NORTH);
+    promptPanel.add(promptScroll, BorderLayout.CENTER);
+    JBLabel promptHelp = new JBLabel("Variables: {{sourceCode}}, {{complexity}}, {{language}}, {{methodName}}, {{breakdown}}");
+    promptHelp.setForeground(JBColor.namedColor("Label.infoForeground", new JBColor(0x808080, 0x8C8C8C)));
+    promptHelp.setFont(promptHelp.getFont().deriveFont(11f));
+    promptHelp.setBorder(JBUI.Borders.emptyTop(4));
+    promptPanel.add(promptHelp, BorderLayout.SOUTH);
+    aiBuilder.addComponent(promptPanel);
+
+    // Test Connection button
+    JPanel testPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
+    testPanel.setBorder(JBUI.Borders.emptyLeft(8));
+    JButton testButton = new JButton("Test Connection");
+    JLabel testResult = new JLabel("");
+    testResult.setBorder(JBUI.Borders.emptyLeft(12));
+    testButton.addActionListener(e -> {
+      testButton.setEnabled(false);
+      testResult.setText("Testing...");
+      testResult.setForeground(JBColor.foreground());
+      // Apply current fields so the test uses latest values
+      aiFields.forEach(BeanField::apply);
+      // Also save the custom prompt
+      AiRefactoringConfiguration.getInstance().customPromptTemplate = customPromptTextArea.getText();
+      AiRefactoringProvider provider = AiProviderRegistry.getActiveProvider();
+      if (provider == null) {
+        testResult.setText("No provider configured");
+        testResult.setForeground(JBColor.RED);
+        testButton.setEnabled(true);
+        return;
+      }
+      provider.validateCredentials().thenAccept(valid -> {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+          if (valid) {
+            testResult.setText("Connection successful!");
+            testResult.setForeground(new JBColor(new Color(0x4bb14f), new Color(0x4bb14f)));
+          } else {
+            testResult.setText("Connection failed. Check your API key.");
+            testResult.setForeground(JBColor.RED);
+          }
+          testButton.setEnabled(true);
+        });
+      }).exceptionally(ex -> {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+          testResult.setText("Connection failed: " + ex.getMessage());
+          testResult.setForeground(JBColor.RED);
+          testButton.setEnabled(true);
+        });
+        return null;
+      });
+    });
+    testPanel.add(testButton);
+    testPanel.add(testResult);
+    aiBuilder.addComponent(testPanel);
+
+    JPanel aiPanel = aiBuilder
+        .addComponentFillVertically(new JPanel(), 0)
+        .getPanel();
+
+    JBScrollPane aiScroll = new JBScrollPane(aiPanel);
+    aiScroll.setBorder(JBUI.Borders.empty());
+    aiScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
     // Add tabs with their own scroll panes (per-tab scrolling)
     tabbedPane.add("Basics", basicsScroll);
     tabbedPane.add("Advanced", advancedScroll);
     tabbedPane.add("Miscellaneous", miscScroll);
+    tabbedPane.add("AI Refactoring", aiScroll);
 
     // Create main container with Reset to Defaults button
     JPanel mainContainer = new JPanel(new BorderLayout());
@@ -1448,7 +1664,6 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       configuration.complexityLevelHighDescription = defaults.complexityLevelHighDescription;
       configuration.complexityLevelNormalDescription = defaults.complexityLevelNormalDescription;
       configuration.complexityLevelLowDescription = defaults.complexityLevelLowDescription;
-      configuration.complexityTemplate = defaults.complexityTemplate;
 
       configuration.anonymousClass = defaults.anonymousClass;
       configuration.arrayAccessExpression = defaults.arrayAccessExpression;
@@ -1671,6 +1886,7 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       basicFields.forEach(BeanField::reset);
       advancedFields.forEach(BeanField::reset);
       miscFields.forEach(BeanField::reset);
+      aiFields.forEach(BeanField::reset);
 
       // Notify listeners to update the editor
       configuration.notifyListeners();
@@ -1694,9 +1910,18 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
   }
 
   public boolean isModified() {
-    return basicFields.stream().anyMatch(BeanField::isModified)
+    if (basicFields.stream().anyMatch(BeanField::isModified)
         || advancedFields.stream().anyMatch(BeanField::isModified)
-        || miscFields.stream().anyMatch(BeanField::isModified);
+        || miscFields.stream().anyMatch(BeanField::isModified)
+        || aiFields.stream().anyMatch(BeanField::isModified)) {
+      return true;
+    }
+    if (customPromptTextArea != null) {
+      String current = customPromptTextArea.getText();
+      String saved = AiRefactoringConfiguration.getInstance().customPromptTemplate;
+      if (!Objects.equals(current, saved)) return true;
+    }
+    return false;
   }
 
   public void apply() {
@@ -1720,6 +1945,14 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       }
     }
     for (BeanField field : miscFields) {
+      if (field instanceof NumericField) {
+        NumericField numField = (NumericField) field;
+        if (!numField.isValidInput()) {
+          invalidFields.add(numField.title);
+        }
+      }
+    }
+    for (BeanField field : aiFields) {
       if (field instanceof NumericField) {
         NumericField numField = (NumericField) field;
         if (!numField.isValidInput()) {
@@ -1752,6 +1985,14 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       for (BeanField field : miscFields) {
         field.apply();
       }
+      for (BeanField field : aiFields) {
+        field.apply();
+      }
+
+      // Save custom prompt template
+      if (customPromptTextArea != null) {
+        AiRefactoringConfiguration.getInstance().customPromptTemplate = customPromptTextArea.getText();
+      }
 
       // Validate and auto-correct configuration
       boolean wasModified = configuration.validateAndFixState();
@@ -1760,6 +2001,7 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
       basicFields.forEach(BeanField::reset);
       advancedFields.forEach(BeanField::reset);
       miscFields.forEach(BeanField::reset);
+      aiFields.forEach(BeanField::reset);
 
       // Notify user if values were auto-corrected
       if (wasModified) {
@@ -1791,6 +2033,12 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
     basicFields.forEach(BeanField::reset);
     advancedFields.forEach(BeanField::reset);
     miscFields.forEach(BeanField::reset);
+    aiFields.forEach(BeanField::reset);
+
+    // Restore custom prompt template
+    if (customPromptTextArea != null) {
+      customPromptTextArea.setText(AiRefactoringConfiguration.getInstance().customPromptTemplate);
+    }
   }
 
   @Override
@@ -2019,6 +2267,100 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
     @Override
     void setComponentValue(String instance) {
       jbTextField.setText(instance);
+    }
+  }
+
+  private class ApiKeyField extends BeanField<String, JPanel> {
+
+    private JPasswordField apiKeyField;
+    private String title;
+
+    public ApiKeyField(Supplier<String> getter, Consumer<String> setter, String title) {
+      super(getter, setter);
+      this.title = title;
+      apiKeyField = new JPasswordField();
+    }
+
+    @Override
+    JPanel createComponent() {
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
+
+      JLabel label = new JLabel(title);
+      label.setPreferredSize(new Dimension(300, 25));
+      label.setMinimumSize(new Dimension(300, 25));
+      label.setMaximumSize(new Dimension(300, 25));
+
+      apiKeyField.setPreferredSize(new Dimension(300, 25));
+      apiKeyField.setMaximumSize(new Dimension(400, 25));
+      apiKeyField.putClientProperty("JTextField.placeholderText", "sk-ant-...");
+
+      jPanel.add(label);
+      jPanel.add(Box.createHorizontalStrut(12));
+      jPanel.add(apiKeyField);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+      return jPanel;
+    }
+
+    @Override
+    String getComponentValue() {
+      return new String(apiKeyField.getPassword());
+    }
+
+    @Override
+    void setComponentValue(String instance) {
+      apiKeyField.setText(instance != null ? instance : "");
+    }
+  }
+
+  private class ComboBoxField extends BeanField<String, JPanel> {
+    private JComboBox<String> comboBox;
+    private String title;
+
+    public ComboBoxField(Supplier<String> getter, Consumer<String> setter, String title, String[] items) {
+      super(getter, setter);
+      this.title = title;
+      comboBox = new JComboBox<>(items);
+      comboBox.setEditable(true); // Allow custom model input
+    }
+
+    @Override
+    JPanel createComponent() {
+      JPanel jPanel = new JPanel();
+      jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+      jPanel.setBorder(JBUI.Borders.empty(4, 8, 4, 8));
+
+      JLabel label = new JLabel(title);
+      label.setPreferredSize(new Dimension(300, 25));
+      label.setMinimumSize(new Dimension(300, 25));
+      label.setMaximumSize(new Dimension(300, 25));
+
+      comboBox.setPreferredSize(new Dimension(250, 25));
+      comboBox.setMaximumSize(new Dimension(400, 25));
+
+      jPanel.add(label);
+      jPanel.add(Box.createHorizontalStrut(12));
+      jPanel.add(comboBox);
+      jPanel.add(Box.createHorizontalGlue());
+
+      jPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+      jPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+      return jPanel;
+    }
+
+    @Override
+    String getComponentValue() {
+      Object selected = comboBox.getSelectedItem();
+      return selected != null ? selected.toString() : "";
+    }
+
+    @Override
+    void setComponentValue(String instance) {
+      comboBox.setSelectedItem(instance != null ? instance : "");
     }
   }
 

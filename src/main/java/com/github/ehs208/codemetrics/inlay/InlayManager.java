@@ -5,7 +5,7 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.core.parser.MetricsParser;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.InlayModel;
@@ -39,8 +39,8 @@ public class InlayManager {
             indicator.setIndeterminate(true);
             indicator.setText("Computing complexity metrics...");
 
-            List<MetricsModel> models = ReadAction.compute(() ->
-                computeMetrics(file).collect(java.util.stream.Collectors.toList()));
+            List<MetricsModel> models = ApplicationManager.getApplication().runReadAction(
+                (Computable<List<MetricsModel>>) () -> computeMetrics(file).collect(java.util.stream.Collectors.toList()));
 
             Application application = ApplicationManager.getApplication();
             application.invokeLater(() -> {

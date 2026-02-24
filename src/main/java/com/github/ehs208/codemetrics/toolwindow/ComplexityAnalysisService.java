@@ -11,6 +11,8 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.FilenameIndex;
 
+import com.intellij.util.concurrency.AppExecutorUtil;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,8 +27,9 @@ public final class ComplexityAnalysisService {
     }
 
     public CompletableFuture<List<ComplexityMethodInfo>> analyzeProjectComplexity() {
-        return CompletableFuture.supplyAsync(() -> {
-            return ReadAction.compute(() -> {
+        CompletableFuture<List<ComplexityMethodInfo>> future = new CompletableFuture<>();
+
+        ReadAction.nonBlocking(() -> {
                 // Ensure configuration is valid before analysis
                 com.github.ehs208.codemetrics.core.config.MetricsConfiguration.getInstance().validateAndFixState();
 
@@ -52,8 +55,14 @@ public final class ComplexityAnalysisService {
                 results.sort((a, b) -> Long.compare(b.getComplexity(), a.getComplexity()));
 
                 return results;
-            });
-        });
+            })
+            .expireWith(project)
+            .coalesceBy(this)
+            .submit(AppExecutorUtil.getAppExecutorService())
+            .onSuccess(future::complete)
+            .onError(e -> future.completeExceptionally(e));
+
+        return future;
     }
 
     private void analyzeFile(VirtualFile file, List<ComplexityMethodInfo> results, MetricsParser parser) {
@@ -72,7 +81,7 @@ public final class ComplexityAnalysisService {
     private void collectMethodComplexity(MetricsModel model, VirtualFile file, List<ComplexityMethodInfo> results) {
         String desc = model.getDescription();
         long complexity = model.getCollectedComplexity();
-        
+
         // Skip "Collector" (root file node) and only include interesting elements
         if (complexity > 1 && desc != null && !desc.equals("Collector")) {
             results.add(new ComplexityMethodInfo(
@@ -80,10 +89,11 @@ public final class ComplexityAnalysisService {
                 complexity,
                 desc,
                 file.getPath(),
-                model.getTextOffset()
+                model.getTextOffset(),
+                model
             ));
         }
-        
+
         // Recursively check children
         for (MetricsModel child : model.getChildren()) {
             collectMethodComplexity(child, file, results);
@@ -96,14 +106,16 @@ public final class ComplexityAnalysisService {
         private final String description;
         private final String filePath;
         private final int textOffset;
+        private final MetricsModel model;
 
-        public ComplexityMethodInfo(String methodName, long complexity, String description, 
-                                   String filePath, int textOffset) {
+        public ComplexityMethodInfo(String methodName, long complexity, String description,
+                                   String filePath, int textOffset, MetricsModel model) {
             this.methodName = methodName;
             this.complexity = complexity;
             this.description = description;
             this.filePath = filePath;
             this.textOffset = textOffset;
+            this.model = model;
         }
 
         public String getMethodName() { return methodName; }
@@ -111,7 +123,8 @@ public final class ComplexityAnalysisService {
         public String getDescription() { return description; }
         public String getFilePath() { return filePath; }
         public int getTextOffset() { return textOffset; }
-        
+        public MetricsModel getModel() { return model; }
+
         public String getFileName() {
             return filePath.substring(filePath.lastIndexOf('/') + 1);
         }

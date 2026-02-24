@@ -15,10 +15,30 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceImplementation="com.github.ehs208.codemetrics.core.config.MetricsConfiguration" />
+    <applicationService serviceImplementation="com.github.ehs208.codemetrics.ai.config.AiRefactoringConfiguration"/>
     <applicationConfigurable instance="com.github.ehs208.codemetrics.configuration.EditorConfig"/>
     <projectService serviceImplementation="com.github.ehs208.codemetrics.inlay.InlayManager"/>
     <postStartupActivity implementation="com.github.ehs208.codemetrics.inlay.EditorListener"/>
-    <toolWindow id="CodeComplexity" secondary="false" anchor="right"
+    <toolWindow id="CodeMetrics" secondary="false" anchor="right"
+                icon="/icons/toolwindow.svg"
                 factoryClass="com.github.ehs208.codemetrics.toolwindow.ComplexityToolWindowFactory"/>
+    <notificationGroup id="CodeMetrics.AI" displayType="BALLOON"/>
+    <intentionAction>
+      <className>com.github.ehs208.codemetrics.ai.action.RefactoringIntentionAction</className>
+      <category>CodeMetrics</category>
+    </intentionAction>
   </extensions>
+
+  <actions>
+    <group id="CodeMetricsHints">
+      <action id="CodeMetrics.SuggestRefactoring"
+              class="com.github.ehs208.codemetrics.ai.action.SuggestRefactoringAction"
+              text="Suggest AI Refactoring"
+              description="Suggest refactoring using AI to reduce complexity"/>
+      <action id="CodeMetrics.BatchRefactoring"
+              class="com.github.ehs208.codemetrics.ai.action.BatchRefactoringAction"
+              text="Batch Refactor File"
+              description="Refactor all complex methods in the current file"/>
+    </group>
+  </actions>
 </idea-plugin>

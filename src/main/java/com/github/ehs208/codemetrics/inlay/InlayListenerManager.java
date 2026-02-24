@@ -4,7 +4,8 @@ import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.util.Debouncer;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -53,7 +54,8 @@ class InlayListenerManager implements FileEditorManagerListener, Disposable {
       // Wrap PSI access in ReadAction and handle AssertionError
       PsiFile psiFile;
       try {
-        psiFile = ReadAction.compute(() -> PsiUtilBase.getPsiFile(project, file));
+        psiFile = ApplicationManager.getApplication().runReadAction(
+            (Computable<PsiFile>) () -> PsiUtilBase.getPsiFile(project, file));
       } catch (AssertionError e) {
         // File is not in PSI yet (e.g., indexing in progress, not a source file)
         return;

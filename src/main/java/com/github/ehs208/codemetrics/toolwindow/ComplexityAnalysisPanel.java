@@ -1,5 +1,7 @@
 package com.github.ehs208.codemetrics.toolwindow;
 
+import com.github.ehs208.codemetrics.ai.AiProviderRegistry;
+import com.github.ehs208.codemetrics.ai.BatchRefactoringService;
 import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
 import com.github.ehs208.codemetrics.toolwindow.ComplexityAnalysisService.ComplexityMethodInfo;
 import com.intellij.openapi.application.ApplicationManager;
@@ -19,6 +21,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ComplexityAnalysisPanel extends JPanel {
     private final Project project;
@@ -26,6 +29,8 @@ public class ComplexityAnalysisPanel extends JPanel {
     private final JBList<ComplexityMethodInfo> methodList;
     private final DefaultListModel<ComplexityMethodInfo> listModel;
     private final JButton refreshButton;
+    private final JButton suggestRefactoringButton;
+    private final JButton batchRefactoringButton;
     private final JLabel statusLabel;
 
 
@@ -35,6 +40,10 @@ public class ComplexityAnalysisPanel extends JPanel {
         this.listModel = new DefaultListModel<>();
         this.methodList = new JBList<>(listModel);
         this.refreshButton = new JButton("Analyze Project");
+        this.suggestRefactoringButton = new JButton("Suggest Refactoring");
+        this.suggestRefactoringButton.setEnabled(false);
+        this.batchRefactoringButton = new JButton("Batch Refactoring");
+        this.batchRefactoringButton.setEnabled(false);
         this.statusLabel = new JLabel("Ready to analyze project complexity");
         
         initializeUI();
@@ -80,12 +89,24 @@ public class ComplexityAnalysisPanel extends JPanel {
         refreshButton.setFocusPainted(false);
 
         buttonPanel.add(refreshButton);
+
+        suggestRefactoringButton.setPreferredSize(new Dimension(160, 32));
+        suggestRefactoringButton.setFont(suggestRefactoringButton.getFont().deriveFont(Font.PLAIN, 12f));
+        suggestRefactoringButton.setFocusPainted(false);
+        buttonPanel.add(suggestRefactoringButton);
+
+        batchRefactoringButton.setPreferredSize(new Dimension(150, 32));
+        batchRefactoringButton.setFont(batchRefactoringButton.getFont().deriveFont(Font.PLAIN, 12f));
+        batchRefactoringButton.setFocusPainted(false);
+        batchRefactoringButton.setToolTipText("Refactor multiple selected methods with AI (Ctrl+Click to multi-select)");
+        buttonPanel.add(batchRefactoringButton);
+
         topPanel.add(buttonPanel, BorderLayout.CENTER);
         add(topPanel, BorderLayout.NORTH);
 
         // Method list with modern styling
         methodList.setCellRenderer(new ModernComplexityListCellRenderer());
-        methodList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        methodList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         methodList.setBackground(JBColor.background());
         methodList.setBorder(JBUI.Borders.empty());
 
@@ -109,7 +130,18 @@ public class ComplexityAnalysisPanel extends JPanel {
 
     private void setupEventHandlers() {
         refreshButton.addActionListener(e -> analyzeProject());
-        
+
+        methodList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedCount = methodList.getSelectedIndices().length;
+                suggestRefactoringButton.setEnabled(selectedCount == 1);
+                batchRefactoringButton.setEnabled(selectedCount >= 2);
+            }
+        });
+
+        suggestRefactoringButton.addActionListener(e -> suggestRefactoringForSelected());
+        batchRefactoringButton.addActionListener(e -> batchRefactoringForSelected());
+
         methodList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -151,12 +183,66 @@ public class ComplexityAnalysisPanel extends JPanel {
         ComplexityMethodInfo selected = methodList.getSelectedValue();
         if (selected != null) {
             ApplicationManager.getApplication().invokeLater(() -> {
-                var file = VirtualFileManager.getInstance().findFileByUrl("file://" + selected.getFilePath());
+                var file = VirtualFileManager.getInstance().findFileByNioPath(java.nio.file.Path.of(selected.getFilePath()));
                 if (file != null) {
                     OpenFileDescriptor descriptor = new OpenFileDescriptor(project, file, selected.getTextOffset());
                     FileEditorManager.getInstance(project).openTextEditor(descriptor, true);
                 }
             });
+        }
+    }
+
+    private void suggestRefactoringForSelected() {
+        ComplexityMethodInfo selected = methodList.getSelectedValue();
+        if (selected == null || selected.getModel() == null) return;
+
+        var provider = AiProviderRegistry.getActiveProvider();
+        if (provider == null || !provider.isConfigured()) {
+            com.intellij.openapi.ui.Messages.showWarningDialog(project,
+                "Please configure an AI provider in Settings > Code Metrics With Kotlin > AI Refactoring.",
+                "AI Provider Not Configured");
+            return;
+        }
+
+        ApplicationManager.getApplication().invokeLater(() -> {
+            var file = VirtualFileManager.getInstance()
+                .findFileByNioPath(java.nio.file.Path.of(selected.getFilePath()));
+            if (file != null) {
+                var descriptor = new OpenFileDescriptor(
+                    project, file, selected.getTextOffset());
+                var editor = FileEditorManager.getInstance(project)
+                    .openTextEditor(descriptor, true);
+                if (editor != null) {
+                    com.github.ehs208.codemetrics.ai.RefactoringService service =
+                        project.getService(com.github.ehs208.codemetrics.ai.RefactoringService.class);
+                    service.suggestRefactoring(editor, selected.getModel());
+                }
+            }
+        });
+    }
+
+    private void batchRefactoringForSelected() {
+        List<ComplexityMethodInfo> selected = methodList.getSelectedValuesList().stream()
+            .filter(m -> m.getModel() != null)
+            .collect(Collectors.toList());
+
+        if (selected.isEmpty()) return;
+
+        var provider = AiProviderRegistry.getActiveProvider();
+        if (provider == null || !provider.isConfigured()) {
+            com.intellij.openapi.ui.Messages.showWarningDialog(project,
+                "Please configure an AI provider in Settings > Code Metrics With Kotlin > AI Refactoring.",
+                "AI Provider Not Configured");
+            return;
+        }
+
+        int confirm = com.intellij.openapi.ui.Messages.showYesNoDialog(project,
+            String.format("Refactor %d selected methods with AI?", selected.size()),
+            "Batch Refactoring", "Process", "Cancel", null);
+
+        if (confirm == com.intellij.openapi.ui.Messages.YES) {
+            BatchRefactoringService batchService = project.getService(BatchRefactoringService.class);
+            batchService.processBatch(selected);
         }
     }
 
