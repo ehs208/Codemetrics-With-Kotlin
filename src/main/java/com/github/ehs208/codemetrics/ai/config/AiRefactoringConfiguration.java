@@ -65,6 +65,13 @@ public class AiRefactoringConfiguration implements PersistentStateComponent<AiRe
         if (cached != null) {
             return NO_KEY_SENTINEL.equals(cached) ? null : cached;
         }
+        // PasswordSafe.get() is a slow operation prohibited inside read actions
+        // (e.g. when called from IntentionAction.isAvailable during highlighting).
+        // On cache miss inside a read action, return null; the cache will be populated
+        // on the next call from a non-read context (settings panel, actual refactoring).
+        if (ApplicationManager.getApplication().isReadAccessAllowed()) {
+            return null;
+        }
         CredentialAttributes attributes = createCredentialAttributes(providerId);
         Credentials credentials = PasswordSafe.getInstance().get(attributes);
         String key = credentials != null ? credentials.getPasswordAsString() : null;
