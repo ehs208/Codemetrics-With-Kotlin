@@ -33,7 +33,15 @@ public final class ResponseParsingUtils {
         int end = text.indexOf("```", codeStart);
         if (end == -1) return text.substring(codeStart).trim();
 
-        return text.substring(codeStart, end).trim();
+        return stripTrailingWhitespace(text.substring(codeStart, end));
+    }
+
+    private static String stripTrailingWhitespace(String s) {
+        int end = s.length();
+        while (end > 0 && Character.isWhitespace(s.charAt(end - 1))) {
+            end--;
+        }
+        return s.substring(0, end);
     }
 
     public static String extractExplanation(String text) {

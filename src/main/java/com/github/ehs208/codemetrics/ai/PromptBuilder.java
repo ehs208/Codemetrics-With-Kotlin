@@ -23,6 +23,7 @@ public class PromptBuilder {
         "   - Using Java/Kotlin standard library methods to replace manual iterations\n" +
         "5. Return ONLY the refactored method code, no surrounding class.\n" +
         "6. Add brief inline comments explaining significant structural changes.\n\n" +
+        "CRITICAL: The refactored code MUST have lower cyclomatic complexity than the original. Do not add new control flow (if/else, loops, try/catch, switch/when) unless you remove more than you add.\n" +
         "Response format:\n" +
         "First, output the refactored code wrapped in a code block.\n" +
         "Then, output a brief explanation of what changes were made and why, under a \"## Explanation\" header.";

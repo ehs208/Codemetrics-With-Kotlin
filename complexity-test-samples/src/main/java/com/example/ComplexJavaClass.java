@@ -15,12 +15,9 @@ public class ComplexJavaClass {
 
     // Low complexity
     public String lowComplexity(int value) {
-        if (value > 0) {           // +1
-            return "positive";
-        } else if (value < 0) {    // +1
-            return "negative";
-        }
-        return "zero";
+        // Use signum-based indexing to eliminate conditional branching
+        String[] labels = {"negative", "zero", "positive"};
+        return labels[Integer.signum(value) + 1];
     }
 
     // Normal complexity
