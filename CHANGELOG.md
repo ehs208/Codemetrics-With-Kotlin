@@ -5,8 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+## [0.3.1] - 2026-03-09
 ### Fixed
 - Fix slow operation error when checking AI provider configuration inside read actions
+- Preserve leading whitespace in AI refactored code (`.trim()` was stripping indentation)
+- Instruct AI to strictly reduce cyclomatic complexity and avoid adding new control flow
+- Reformat code after applying AI refactoring to restore project code style
+- Simplify post-refactoring notification; removed unreliable complexity comparison that failed when AI renamed or split the method
+- Restrict AI refactoring button to methods and functions only (for-loops, anonymous classes, etc. are no longer eligible)
+- Prevent EDT freeze by caching `MetricsConfiguration` in the complexity list cell renderer
 
 ## [0.3.0]
 ### Added
