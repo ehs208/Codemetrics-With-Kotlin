@@ -9,7 +9,11 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.JBColor;
+import org.jetbrains.kotlin.psi.KtNamedFunction;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
@@ -134,8 +138,10 @@ public class ComplexityAnalysisPanel extends JPanel {
         methodList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedCount = methodList.getSelectedIndices().length;
-                suggestRefactoringButton.setEnabled(selectedCount == 1);
-                batchRefactoringButton.setEnabled(selectedCount >= 2);
+                ComplexityMethodInfo singleSelected = selectedCount == 1 ? methodList.getSelectedValue() : null;
+                suggestRefactoringButton.setEnabled(selectedCount == 1 && isRefactorable(singleSelected));
+                java.util.List<ComplexityMethodInfo> allSelected = methodList.getSelectedValuesList();
+                batchRefactoringButton.setEnabled(selectedCount >= 2 && allSelected.stream().anyMatch(this::isRefactorable));
             }
         });
 
@@ -177,6 +183,21 @@ public class ComplexityAnalysisPanel extends JPanel {
             });
             return null;
         });
+    }
+
+    private boolean isRefactorable(ComplexityMethodInfo info) {
+        if (info == null) return false;
+        var file = VirtualFileManager.getInstance()
+            .findFileByNioPath(java.nio.file.Path.of(info.getFilePath()));
+        if (file == null) return false;
+        var psiFile = PsiManager.getInstance(project).findFile(file);
+        if (psiFile == null) return false;
+        var element = psiFile.findElementAt(info.getTextOffset());
+        if (element == null) return false;
+        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class, false);
+        if (method != null && method.getTextOffset() == info.getTextOffset()) return true;
+        KtNamedFunction ktFunction = PsiTreeUtil.getParentOfType(element, KtNamedFunction.class, false);
+        return ktFunction != null && ktFunction.getTextOffset() == info.getTextOffset();
     }
 
     private void navigateToSelectedMethod() {
@@ -249,6 +270,7 @@ public class ComplexityAnalysisPanel extends JPanel {
     private static class ModernComplexityListCellRenderer extends JPanel implements ListCellRenderer<ComplexityMethodInfo> {
         private final JLabel iconLabel;
         private final JLabel contentLabel;
+        private MetricsConfiguration cachedConfig;
 
         public ModernComplexityListCellRenderer() {
             setLayout(new BorderLayout(8, 0));
@@ -281,8 +303,12 @@ public class ComplexityAnalysisPanel extends JPanel {
                 contentLabel.setForeground(list.getForeground());
             }
 
-            // Get complexity level info
-            MetricsConfiguration config = MetricsConfiguration.getInstance();
+            // Get complexity level info (cached to avoid EDT service-lock contention)
+            if (cachedConfig == null) {
+                cachedConfig = com.intellij.openapi.application.ApplicationManager.getApplication()
+                    .getServiceIfCreated(MetricsConfiguration.class);
+            }
+            MetricsConfiguration config = cachedConfig != null ? cachedConfig : MetricsConfiguration.getInstance();
             String levelText = getComplexityLevelText(method.getComplexity(), config);
             Color indicatorColor = getComplexityColor(method.getComplexity(), config);
 
