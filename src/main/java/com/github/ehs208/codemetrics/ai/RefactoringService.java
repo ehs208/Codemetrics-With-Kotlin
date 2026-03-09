@@ -6,7 +6,6 @@ import com.github.ehs208.codemetrics.ai.history.RefactoringHistoryService;
 import com.github.ehs208.codemetrics.ai.ui.RefactoringDiffViewer;
 import com.github.ehs208.codemetrics.core.MetricsModel;
 import com.github.ehs208.codemetrics.core.config.MetricsConfiguration;
-import com.github.ehs208.codemetrics.core.parser.MetricsParser;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -345,61 +344,19 @@ public final class RefactoringService {
 
             document.replaceString(start, end, suggestedCode);
             PsiDocumentManager.getInstance(project).commitDocument(document);
-        });
-
-        // Re-analyze complexity after PSI is fully committed
-        PsiDocumentManager.getInstance(project).performWhenAllCommitted(() -> {
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                try {
-                    ApplicationManager.getApplication().runReadAction((Runnable) () -> {
-                        Document doc = editor.getDocument();
-                        PsiFile psiFile2 = PsiDocumentManager.getInstance(project).getPsiFile(doc);
-                        if (psiFile2 != null) {
-                            MetricsParser parser = new MetricsParser();
-                            MetricsModel newModel = parser.getMetrics(psiFile2);
-                            if (newModel != null) {
-                                long newComplexity = findMethodComplexity(newModel, model.getTextToShow());
-                                long oldComplexity = model.getCollectedComplexity();
-                                if (newComplexity >= 0 && newComplexity != oldComplexity) {
-                                    long reduction = oldComplexity - newComplexity;
-                                    int percent = 0;
-                                    if (oldComplexity > 0) {
-                                        percent = (int) ((reduction * 100) / oldComplexity);
-                                    }
-                                    showNotification("Complexity Reduced",
-                                        String.format("Complexity reduced: %d → %d (%d%% reduction)",
-                                            oldComplexity, newComplexity, percent),
-                                        NotificationType.INFORMATION);
-
-                                    // Update history entry
-                                    historyEntry.newComplexity = newComplexity;
-                                    historyEntry.applied = true;
-                                } else {
-                                    showNotification("Refactoring Applied",
-                                        "AI refactoring has been applied. You can undo with Ctrl+Z.",
-                                        NotificationType.INFORMATION);
-                                }
-                            }
-                        }
-                    });
-                } catch (Exception e) {
-                    showNotification("Refactoring Applied",
-                        "AI refactoring has been applied. You can undo with Ctrl+Z.",
-                        NotificationType.INFORMATION);
+            // Reformat inserted code to match project code style
+            PsiElement refreshed = psiFile.findElementAt(start);
+            if (refreshed != null) {
+                PsiElement reformatTarget = findMethodElement(refreshed);
+                if (reformatTarget != null) {
+                    com.intellij.psi.codeStyle.CodeStyleManager.getInstance(project).reformat(reformatTarget);
                 }
-            });
+            }
         });
-    }
 
-    private long findMethodComplexity(MetricsModel root, String methodName) {
-        if (methodName != null && methodName.equals(root.getTextToShow())) {
-            return root.getCollectedComplexity();
-        }
-        for (MetricsModel child : root.getChildren()) {
-            long result = findMethodComplexity(child, methodName);
-            if (result >= 0) return result;
-        }
-        return -1;
+        showNotification("Refactoring Applied",
+            "AI refactoring has been applied. Check inlay hints for updated complexity.",
+            NotificationType.INFORMATION);
     }
 
     private void showNotification(String title, String content, NotificationType type) {

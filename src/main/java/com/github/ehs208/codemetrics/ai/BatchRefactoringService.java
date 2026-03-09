@@ -409,6 +409,14 @@ public final class BatchRefactoringService {
                         int end = methodElement.getTextRange().getEndOffset();
                         document.replaceString(start, end, response.getSuggestedCode());
                         PsiDocumentManager.getInstance(project).commitDocument(document);
+                        // Reformat inserted code to match project code style
+                        PsiElement refreshed = psiFile.findElementAt(start);
+                        if (refreshed != null) {
+                            PsiElement reformatTarget = findMethodElement(refreshed);
+                            if (reformatTarget != null) {
+                                com.intellij.psi.codeStyle.CodeStyleManager.getInstance(project).reformat(reformatTarget);
+                            }
+                        }
                     }
                 });
 
@@ -458,6 +466,14 @@ public final class BatchRefactoringService {
                 int end = methodElement.getTextRange().getEndOffset();
                 document.replaceString(start, end, suggestedCode);
                 PsiDocumentManager.getInstance(project).commitDocument(document);
+                // Reformat inserted code to match project code style
+                PsiElement refreshed = psiFile.findElementAt(start);
+                if (refreshed != null) {
+                    PsiElement reformatTarget = findMethodElement(refreshed);
+                    if (reformatTarget != null) {
+                        com.intellij.psi.codeStyle.CodeStyleManager.getInstance(project).reformat(reformatTarget);
+                    }
+                }
             }
         });
     }
