@@ -18,13 +18,16 @@ import org.jetbrains.annotations.Nullable;
 public class AiRefactoringConfiguration implements PersistentStateComponent<AiRefactoringConfiguration> {
 
     public String activeProviderId = "Claude";
-    public String claudeModel = "claude-sonnet-4-6";
-    public int maxTokens = 4096;
+    public String claudeModel = "claude-opus-4-7";
+    public int maxTokens = 8192;
     public boolean includeClassContext = true;
-    public String openaiModel = "gpt-5.2";
-    public String geminiModel = "gemini-2.5-flash";
+    public String openaiModel = "gpt-5.5";
+    public String geminiModel = "gemini-3-pro-preview";
     public String codexModel = "gpt-5.3-codex";
     public String reasoningEffort = "medium";
+    public String claudeEffort = "high";
+    public String geminiThinkingLevel = "high";
+    public String openAiTextVerbosity = "medium";
     public int intentionThreshold = 5;
     public String customPromptTemplate = "";
 

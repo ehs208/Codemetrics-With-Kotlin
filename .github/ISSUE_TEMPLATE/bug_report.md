@@ -30,8 +30,8 @@ assignees: ''
 
 ## Environment
 
-- **Plugin Version**: <!-- e.g., 0.1.9 -->
-- **IntelliJ IDEA Version**: <!-- e.g., 2024.2.1 -->
+- **Plugin Version**: <!-- Version shown in Settings/Preferences > Plugins -->
+- **IntelliJ IDEA Version**: <!-- e.g., 2024.3+ -->
 - **IDE Edition**: <!-- Community or Ultimate -->
 - **Operating System**: <!-- e.g., macOS 14.0, Windows 11, Ubuntu 22.04 -->
 - **Java Version**: <!-- e.g., Java 17 -->

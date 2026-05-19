@@ -115,6 +115,7 @@ public class ClaudeProvider implements AiRefactoringProvider {
                 JsonObject body = new JsonObject();
                 body.addProperty("model", config.claudeModel);
                 body.addProperty("max_tokens", 10);
+                addClaudeEffort(body, config);
 
                 JsonArray messages = new JsonArray();
                 JsonObject msg = new JsonObject();
@@ -147,6 +148,7 @@ public class ClaudeProvider implements AiRefactoringProvider {
         body.addProperty("model", config.claudeModel);
         body.addProperty("max_tokens", config.maxTokens);
         body.addProperty("system", systemPrompt);
+        addClaudeEffort(body, config);
 
         JsonArray messages = new JsonArray();
         JsonObject userMessage = new JsonObject();
@@ -156,6 +158,41 @@ public class ClaudeProvider implements AiRefactoringProvider {
         body.add("messages", messages);
 
         return body;
+    }
+
+    private void addClaudeEffort(JsonObject body, AiRefactoringConfiguration config) {
+        String effort = normalizeClaudeEffort(config.claudeModel, config.claudeEffort);
+        if (effort == null) {
+            return;
+        }
+
+        JsonObject outputConfig = new JsonObject();
+        outputConfig.addProperty("effort", effort);
+        body.add("output_config", outputConfig);
+    }
+
+    private String normalizeClaudeEffort(String model, String effort) {
+        if (model == null || effort == null || effort.isEmpty() || "default".equals(effort)) {
+            return null;
+        }
+
+        boolean opus47 = model.startsWith("claude-opus-4-7");
+        boolean opus46 = model.startsWith("claude-opus-4-6");
+        boolean sonnet46 = model.startsWith("claude-sonnet-4-6");
+        boolean opus45 = model.startsWith("claude-opus-4-5");
+        boolean mythos = model.startsWith("claude-mythos-preview");
+
+        if (!(opus47 || opus46 || sonnet46 || opus45 || mythos)) {
+            return null;
+        }
+
+        if ("xhigh".equals(effort) && !opus47) {
+            return "high";
+        }
+        if ("max".equals(effort) && !(opus47 || opus46 || sonnet46 || mythos)) {
+            return "high";
+        }
+        return effort;
     }
 
     private AiRefactoringResponse parseResponse(String responseBody) {
@@ -186,11 +223,34 @@ public class ClaudeProvider implements AiRefactoringProvider {
             outputTokens = usage.has("output_tokens") ? usage.get("output_tokens").getAsInt() : 0;
         }
 
-        // Estimate cost (Claude Sonnet pricing: $3/M input, $15/M output)
-        double estimatedCost = (inputTokens * 3.0 / 1_000_000) + (outputTokens * 15.0 / 1_000_000);
+        double estimatedCost = estimateCost(json, inputTokens, outputTokens);
 
         return new AiRefactoringResponse(suggestedCode, explanation, getDisplayName(),
             inputTokens, outputTokens, estimatedCost);
+    }
+
+    private double estimateCost(JsonObject response, int inputTokens, int outputTokens) {
+        String model = response.has("model") && !response.get("model").isJsonNull()
+            ? response.get("model").getAsString()
+            : AiRefactoringConfiguration.getInstance().claudeModel;
+
+        double inputPerMillion;
+        double outputPerMillion;
+        if (model.startsWith("claude-haiku")) {
+            inputPerMillion = 1.0;
+            outputPerMillion = 5.0;
+        } else if (model.startsWith("claude-sonnet")) {
+            inputPerMillion = 3.0;
+            outputPerMillion = 15.0;
+        } else if (model.startsWith("claude-opus")) {
+            inputPerMillion = 5.0;
+            outputPerMillion = 25.0;
+        } else {
+            return 0.0;
+        }
+
+        return (inputTokens * inputPerMillion / 1_000_000)
+            + (outputTokens * outputPerMillion / 1_000_000);
     }
 
 }

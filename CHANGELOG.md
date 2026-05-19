@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-05-19
+### Changed
+- Update AI provider defaults to Claude Opus 4.7, OpenAI GPT-5.5, Gemini 3 Pro Preview, and GPT-5.3-Codex.
+- Align AI provider parameters with current APIs: OpenAI Responses API output controls, Claude `output_config.effort`, and Gemini 3 thinking levels.
+- Update repository documentation to match current platform support, AI provider credential flows, tracked release workflow location, and current AI model/parameter defaults.
+
 ## [0.3.1] - 2026-03-09
 ### Fixed
 - Fix slow operation error when checking AI provider configuration inside read actions
@@ -24,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Refactoring history** - new History tab in the tool window tracks all AI suggestions
 - **Quick actions** - trigger refactoring from lightbulb (Alt+Enter) or right-click on complexity hints
 - **Complexity re-measurement** - see complexity reduction after applying refactoring
-- **AI configuration** - choose provider/model, set custom prompts, and configure reasoning effort
+- **AI configuration** - choose provider/model, set custom prompts, and configure provider-specific reasoning, effort, verbosity, and thinking parameters
 
 ### Changed
 - Tool window renamed from "CodeComplexity" to "CodeMetrics" with new icon

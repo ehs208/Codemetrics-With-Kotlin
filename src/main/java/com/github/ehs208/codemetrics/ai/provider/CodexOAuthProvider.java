@@ -181,6 +181,7 @@ public class CodexOAuthProvider implements AiRefactoringProvider {
                 body.add("input", input);
                 body.addProperty("store", false);
                 body.addProperty("stream", true);
+                addCodexReasoning(body, config);
 
                 HttpRequest request = buildHttpRequest(accessToken, accountId, body);
 
@@ -549,15 +550,27 @@ public class CodexOAuthProvider implements AiRefactoringProvider {
         body.addProperty("store", false);
         body.addProperty("stream", true);
 
-        // Add reasoning effort if not empty
-        String effort = config.reasoningEffort;
-        if (effort != null && !effort.isEmpty() && !"none".equals(effort)) {
-            JsonObject reasoning = new JsonObject();
-            reasoning.addProperty("effort", effort);
-            body.add("reasoning", reasoning);
-        }
+        addCodexReasoning(body, config);
 
         return body;
+    }
+
+    private void addCodexReasoning(JsonObject body, AiRefactoringConfiguration config) {
+        String effort = normalizeCodexReasoningEffort(config.reasoningEffort);
+        if (effort == null) {
+            return;
+        }
+
+        JsonObject reasoning = new JsonObject();
+        reasoning.addProperty("effort", effort);
+        body.add("reasoning", reasoning);
+    }
+
+    private String normalizeCodexReasoningEffort(String effort) {
+        if (effort == null || effort.isEmpty() || "none".equals(effort)) {
+            return null;
+        }
+        return "minimal".equals(effort) ? "low" : effort;
     }
 
     // ---- SSE Response Parsing ----

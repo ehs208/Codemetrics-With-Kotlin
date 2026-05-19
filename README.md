@@ -29,7 +29,7 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "CodeMetrics With Kotlin"</kbd> > <kbd>Install</kbd>
 
 ## Configuration
-<kbd>Settings/Preferences</kbd> > <kbd>Code Metrics</kbd> to customize:
+<kbd>Settings/Preferences</kbd> > <kbd>Code Metrics With Kotlin</kbd> to customize:
 - Complexity thresholds for different colors (low/normal/high/extreme)
 - Which elements to measure (methods, classes, lambda expressions, properties)
 - **Granular Kotlin visibility controls** (classes, functions, properties, lambdas, if/when/for/while/try)
@@ -39,12 +39,20 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 **Note**: The plugin automatically validates configuration to prevent invalid threshold combinations.
 
 ### AI Refactoring Settings
-<kbd>Settings/Preferences</kbd> > <kbd>Code Metrics</kbd> > <kbd>AI Refactoring</kbd> tab:
+<kbd>Settings/Preferences</kbd> > <kbd>Code Metrics With Kotlin</kbd> > <kbd>AI Refactoring</kbd> tab:
 - **Provider**: Choose from Claude, OpenAI, Gemini, or Codex (ChatGPT OAuth login)
-- **API Key**: Enter your API key (stored securely via IntelliJ PasswordSafe)
-- **Model**: Select model per provider (editable dropdown with defaults)
+- **Credentials**:
+  - Claude, OpenAI, and Gemini use API keys stored securely via IntelliJ PasswordSafe.
+  - Codex uses ChatGPT OAuth login; stored OAuth tokens are kept in IntelliJ PasswordSafe.
+    If browser automation is unavailable, the OAuth flow prompts for the callback URL.
+- **Model**: Select model per provider (editable dropdown with current defaults)
+  - Claude defaults to `claude-opus-4-7`; OpenAI defaults to `gpt-5.5`; Gemini defaults to `gemini-3-pro-preview`; Codex defaults to `gpt-5.3-codex`.
 - **Custom Prompt**: Add custom instructions appended to the auto-generated prompt
-- **Reasoning Effort** (GPT-5.x only): none / low / medium / high / xhigh
+- **Provider parameters**:
+  - OpenAI / Codex reasoning effort: none / minimal / low / medium / high / xhigh (unsupported levels are omitted or normalized per selected model)
+  - OpenAI text verbosity for GPT-5 models: low / medium / high
+  - Claude effort: default / low / medium / high / xhigh / max
+  - Gemini thinking level for Gemini 3 models: default / minimal / low / medium / high (Gemini 3 Pro sends low/high only; unsupported lower levels are normalized)
 
 ## Usage
 1. **Inline Hints**: Complexity scores appear as inlay hints next to methods and classes
@@ -117,4 +125,4 @@ Licensed under the [MIT License](LICENSE).
 ```
 
 ### Publishing (Maintainers Only)
-See [Release Workflow](.claude/release-workflow.md) for details.
+Maintainer release steps are tracked in [CONTRIBUTING.md](CONTRIBUTING.md#maintainer-release-process).

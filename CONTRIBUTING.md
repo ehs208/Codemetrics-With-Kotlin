@@ -6,7 +6,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Prerequisites
 - **Java 17+** (required)
-- **IntelliJ IDEA 2024.2.1+** (Community or Ultimate)
+- **IntelliJ IDEA 2024.3+** (Community or Ultimate)
 - **Gradle JVM**: Java 21 recommended (to avoid validation warnings with newer JDK versions)
 - Git
 
@@ -130,8 +130,8 @@ Then create a Pull Request on GitHub:
 
 ❌ **DO NOT modify `pluginVersion` in `gradle.properties`**
 ```properties
-# DON'T CHANGE THIS:
-pluginVersion = 0.1.9
+# DON'T CHANGE THE VALUE CURRENTLY ON main:
+pluginVersion = X.Y.Z
 ```
 
 The CI will **automatically reject** your PR if you change the version number. The maintainer handles version updates during releases.
@@ -139,7 +139,7 @@ The CI will **automatically reject** your PR if you change the version number. T
 ❌ **DO NOT create new version sections in CHANGELOG.md**
 ```markdown
 # DON'T DO THIS:
-## [0.2.0] - 2025-02-20
+## [X.Y.Z] - YYYY-MM-DD
 ### Added
 - My feature
 ```
@@ -175,7 +175,7 @@ Only add to `[Unreleased]`.
 src/main/java/com/github/ehs208/codemetrics/
 ├── ai/                    # AI refactoring feature
 │   ├── provider/         # AI provider implementations (Claude, OpenAI, Gemini, Codex)
-│   ├── config/           # AI configuration and API key storage
+│   ├── config/           # AI configuration, API key storage, and OAuth token storage
 │   ├── action/           # Context menu and intention actions
 │   ├── batch/            # Batch refactoring support
 │   ├── history/          # Refactoring history tracking
@@ -293,6 +293,27 @@ All contributors are acknowledged in:
 
 ---
 
-**Questions?** Open an issue or check [CLAUDE.md](CLAUDE.md) for architecture details.
+## Maintainer Release Process
+
+1. Merge approved PRs to `main`.
+2. Test the accumulated changes:
+   ```bash
+   git checkout main
+   git pull
+   ./gradlew build verifyPlugin
+   ./gradlew runIde
+   ```
+3. Move `[Unreleased]` entries in `CHANGELOG.md` to the new version section.
+4. Update `pluginVersion` in `gradle.properties`.
+5. Commit and push the release changes.
+6. Create and push a matching `vX.Y.Z` tag:
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+The `publish.yml` workflow verifies that the tag version matches `gradle.properties`, builds and verifies the plugin, publishes to JetBrains Marketplace using `PUBLISH_TOKEN`, and creates a GitHub Release.
+
+**Questions?** Open an issue or check [CLAUDE.md](CLAUDE.md) for the quick architecture map.
 
 Thank you for contributing! 🚀

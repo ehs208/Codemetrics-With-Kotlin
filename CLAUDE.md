@@ -2,7 +2,7 @@
 
 IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay hints for Java and Kotlin files.
 
-**Version**: 0.2.0
+**Version source**: `pluginVersion` in `gradle.properties`; release history in `CHANGELOG.md`
 **License**: MIT (Dual copyright: Tamas Kisst + ehs208)
 **Based on**: [Original CodeMetrics](https://github.com/kisstkondoros/codemetrics-idea) by Tamas Kisst
 
@@ -27,13 +27,21 @@ IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay 
 
 ## Documentation
 
-### Development
-- [Architecture](.claude/architecture.md) - Core components, Kotlin support, plugin structure
-- [Development Gotchas](.claude/development-gotchas.md) - PSI threading, APIs, common issues
-- [Contributing Guide](CONTRIBUTING.md) - Full contributor workflow
+Tracked documentation:
+- [README](README.md) - User-facing feature, setup, and usage overview
+- [Contributing Guide](CONTRIBUTING.md) - Contributor workflow, architecture map, development tips, and release process
+- [Changelog](CHANGELOG.md) - Release history
 
-### Maintainers
-- [Release Workflow](.claude/release-workflow.md) - Release process, CI/CD, repository config
+Local `.claude/` notes are intentionally ignored by git and are not canonical repository documentation.
+
+### Architecture Map
+- `src/main/java/com/github/ehs208/codemetrics/core/MetricsModel.java` - Hierarchical complexity metrics model
+- `src/main/java/com/github/ehs208/codemetrics/core/parser/MetricsParser.java` - Complexity parsing entry point
+- `src/main/java/com/github/ehs208/codemetrics/core/parser/TreeWalker.java` - AST traversal and metrics collection
+- `src/main/java/com/github/ehs208/codemetrics/core/parser/HandlerRegistry.java` - Java/Kotlin PSI element handler registration
+- `src/main/java/com/github/ehs208/codemetrics/inlay/InlayManager.java` - Editor inlay lifecycle management
+- `src/main/java/com/github/ehs208/codemetrics/toolwindow/ComplexityToolWindowFactory.java` - CodeMetrics tool window with Analysis and History tabs
+- `src/main/java/com/github/ehs208/codemetrics/configuration/EditorConfig.java` - Settings UI, including AI Refactoring settings
 
 ---
 
@@ -49,9 +57,9 @@ IntelliJ IDEA plugin providing real-time cyclomatic complexity metrics as inlay 
 - **Current Maintainer**: ehs208
 - Atomic commits by feature (avoid monolithic commits)
 - Use conventional commit prefixes: `feat:`, `fix:`, `docs:`, `chore:`, `ci:`
-- Tag format: `v*` (e.g., `v0.2.0`) triggers auto-publish
+- Tag format: `v*` (for example, `vX.Y.Z`) triggers auto-publish
 - Version updates: Update both `gradle.properties` and `CHANGELOG.md`
-- Release process: See [Release Workflow](.claude/release-workflow.md)
+- Release process: See [CONTRIBUTING.md](CONTRIBUTING.md#maintainer-release-process)
 
 ---
 

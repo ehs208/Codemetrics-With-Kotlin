@@ -108,7 +108,8 @@ public class GeminiProvider implements AiRefactoringProvider {
 
                 JsonObject body = new JsonObject();
                 JsonObject genConfig = new JsonObject();
-                genConfig.addProperty("maxOutputTokens", 10);
+                genConfig.addProperty("maxOutputTokens", 32);
+                addGeminiThinkingConfig(genConfig, config);
                 body.add("generationConfig", genConfig);
 
                 JsonArray contents = new JsonArray();
@@ -171,9 +172,39 @@ public class GeminiProvider implements AiRefactoringProvider {
         // Generation config
         JsonObject genConfig = new JsonObject();
         genConfig.addProperty("maxOutputTokens", config.maxTokens);
+        addGeminiThinkingConfig(genConfig, config);
         body.add("generationConfig", genConfig);
 
         return body;
+    }
+
+    private void addGeminiThinkingConfig(JsonObject genConfig, AiRefactoringConfiguration config) {
+        String thinkingLevel = normalizeGeminiThinkingLevel(config.geminiModel, config.geminiThinkingLevel);
+        if (thinkingLevel == null) {
+            return;
+        }
+
+        JsonObject thinkingConfig = new JsonObject();
+        thinkingConfig.addProperty("thinkingLevel", thinkingLevel);
+        genConfig.add("thinkingConfig", thinkingConfig);
+    }
+
+    private String normalizeGeminiThinkingLevel(String model, String thinkingLevel) {
+        if (model == null || thinkingLevel == null || thinkingLevel.isEmpty() || "default".equals(thinkingLevel)) {
+            return null;
+        }
+        if (!model.startsWith("gemini-3")) {
+            return null;
+        }
+        if (model.startsWith("gemini-3-pro")) {
+            if ("minimal".equals(thinkingLevel)) {
+                return "low";
+            }
+            if ("medium".equals(thinkingLevel)) {
+                return "high";
+            }
+        }
+        return thinkingLevel;
     }
 
     private AiRefactoringResponse parseResponse(String responseBody) {
@@ -192,7 +223,7 @@ public class GeminiProvider implements AiRefactoringProvider {
             throw new RuntimeException("No parts in Gemini response");
         }
 
-        String text = parts.get(0).getAsJsonObject().get("text").getAsString();
+        String text = extractText(parts);
 
         String suggestedCode = ResponseParsingUtils.extractCodeBlock(text);
         String explanation = ResponseParsingUtils.extractExplanation(text);
@@ -214,6 +245,26 @@ public class GeminiProvider implements AiRefactoringProvider {
 
         return new AiRefactoringResponse(suggestedCode, explanation, getDisplayName(),
             (int) inputTokens, (int) outputTokens, estimatedCost);
+    }
+
+    private String extractText(JsonArray parts) {
+        StringBuilder fullText = new StringBuilder();
+        for (JsonElement partElement : parts) {
+            if (!partElement.isJsonObject()) {
+                continue;
+            }
+            JsonObject part = partElement.getAsJsonObject();
+            boolean thought = part.has("thought") && part.get("thought").getAsBoolean();
+            if (!thought && part.has("text") && !part.get("text").isJsonNull()) {
+                fullText.append(part.get("text").getAsString());
+            }
+        }
+
+        if (fullText.length() == 0) {
+            throw new RuntimeException("No text parts in Gemini response");
+        }
+
+        return fullText.toString();
     }
 
 }
