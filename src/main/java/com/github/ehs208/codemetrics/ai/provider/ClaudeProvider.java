@@ -176,20 +176,21 @@ public class ClaudeProvider implements AiRefactoringProvider {
             return null;
         }
 
+        boolean opus48 = model.startsWith("claude-opus-4-8");
         boolean opus47 = model.startsWith("claude-opus-4-7");
         boolean opus46 = model.startsWith("claude-opus-4-6");
         boolean sonnet46 = model.startsWith("claude-sonnet-4-6");
         boolean opus45 = model.startsWith("claude-opus-4-5");
         boolean mythos = model.startsWith("claude-mythos-preview");
 
-        if (!(opus47 || opus46 || sonnet46 || opus45 || mythos)) {
+        if (!(opus48 || opus47 || opus46 || sonnet46 || opus45 || mythos)) {
             return null;
         }
 
-        if ("xhigh".equals(effort) && !opus47) {
+        if ("xhigh".equals(effort) && !(opus48 || opus47)) {
             return "high";
         }
-        if ("max".equals(effort) && !(opus47 || opus46 || sonnet46 || mythos)) {
+        if ("max".equals(effort) && !(opus48 || opus47 || opus46 || sonnet46 || mythos)) {
             return "high";
         }
         return effort;

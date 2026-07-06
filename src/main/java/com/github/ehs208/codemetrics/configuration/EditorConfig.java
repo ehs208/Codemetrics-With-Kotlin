@@ -1269,7 +1269,7 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         v -> aiConfig.setApiKey("Claude", v),
         "Claude API Key"));
     comboBox(aiFields, () -> aiConfig.claudeModel, v -> aiConfig.claudeModel = v,
-        "Claude Model", new String[]{"claude-opus-4-7", "claude-mythos-preview", "claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5", "claude-haiku-4-5-20251001", "claude-opus-4-5", "claude-opus-4-5-20251101", "claude-sonnet-4-5", "claude-sonnet-4-5-20250929"});
+        "Claude Model", new String[]{"claude-opus-4-8", "claude-sonnet-5", "claude-opus-4-7", "claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5", "claude-haiku-4-5-20251001", "claude-opus-4-5", "claude-opus-4-5-20251101", "claude-sonnet-4-5", "claude-sonnet-4-5-20250929"});
     comboBox(aiFields, () -> aiConfig.claudeEffort, v -> aiConfig.claudeEffort = v,
         "Claude Effort", new String[]{"default", "low", "medium", "high", "xhigh", "max"});
 
@@ -1289,7 +1289,7 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         v -> aiConfig.setApiKey("Gemini", v),
         "Gemini API Key"));
     comboBox(aiFields, () -> aiConfig.geminiModel, v -> aiConfig.geminiModel = v,
-        "Gemini Model", new String[]{"gemini-3-pro-preview", "gemini-3-flash-preview", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"});
+        "Gemini Model", new String[]{"gemini-3.5-flash", "gemini-3.1-pro-preview", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"});
     comboBox(aiFields, () -> aiConfig.geminiThinkingLevel, v -> aiConfig.geminiThinkingLevel = v,
         "Gemini Thinking Level (Gemini 3; Pro supports low/high)", new String[]{"default", "minimal", "low", "medium", "high"});
 

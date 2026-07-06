@@ -18,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
 public class AiRefactoringConfiguration implements PersistentStateComponent<AiRefactoringConfiguration> {
 
     public String activeProviderId = "Claude";
-    public String claudeModel = "claude-opus-4-7";
+    public String claudeModel = "claude-opus-4-8";
     public int maxTokens = 8192;
     public boolean includeClassContext = true;
     public String openaiModel = "gpt-5.5";
-    public String geminiModel = "gemini-3-pro-preview";
+    public String geminiModel = "gemini-3.5-flash";
     public String codexModel = "gpt-5.3-codex";
     public String reasoningEffort = "medium";
     public String claudeEffort = "high";
@@ -49,6 +49,18 @@ public class AiRefactoringConfiguration implements PersistentStateComponent<AiRe
     @Override
     public void loadState(@NotNull AiRefactoringConfiguration state) {
         XmlSerializerUtil.copyBean(state, this);
+        migrateRetiredModels();
+    }
+
+    /**
+     * Move persisted settings off models that providers have retired, so existing
+     * users are not stuck sending requests that always fail.
+     * Gemini 3 Pro Preview was shut down (2026-03-09).
+     */
+    private void migrateRetiredModels() {
+        if ("gemini-3-pro-preview".equals(geminiModel)) {
+            geminiModel = "gemini-3.5-flash";
+        }
     }
 
     public void setApiKey(String providerId, String apiKey) {

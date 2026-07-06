@@ -46,7 +46,7 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
   - Codex uses ChatGPT OAuth login; stored OAuth tokens are kept in IntelliJ PasswordSafe.
     If browser automation is unavailable, the OAuth flow prompts for the callback URL.
 - **Model**: Select model per provider (editable dropdown with current defaults)
-  - Claude defaults to `claude-opus-4-7`; OpenAI defaults to `gpt-5.5`; Gemini defaults to `gemini-3-pro-preview`; Codex defaults to `gpt-5.3-codex`.
+  - Claude defaults to `claude-opus-4-8`; OpenAI defaults to `gpt-5.5`; Gemini defaults to `gemini-3.5-flash`; Codex defaults to `gpt-5.3-codex`.
 - **Custom Prompt**: Add custom instructions appended to the auto-generated prompt
 - **Provider parameters**:
   - OpenAI / Codex reasoning effort: none / minimal / low / medium / high / xhigh (unsupported levels are omitted or normalized per selected model)
