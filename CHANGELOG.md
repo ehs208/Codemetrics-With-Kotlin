@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-07-06
+### Fixed
+- Replace the retired Gemini default model `gemini-3-pro-preview` (shut down 2026-03-09) with the generally available `gemini-3.5-flash`, and automatically migrate existing users off the retired model.
+
+### Changed
+- Update default AI models: Claude now defaults to `claude-opus-4-8`; Gemini now defaults to `gemini-3.5-flash`. OpenAI (`gpt-5.5`) and Codex (`gpt-5.3-codex`) defaults remain the latest generally available models.
+- Add Claude 5 Sonnet (`claude-sonnet-5`) and Claude Opus 4.8 (`claude-opus-4-8`) to the Claude model dropdown; refresh the Gemini model dropdown to the current model lineup.
+- Extend Claude effort handling to `claude-opus-4-8` (supports up to `xhigh`/`max`).
+
 ## [0.3.2] - 2026-05-19
 ### Changed
 - Update AI provider defaults to Claude Opus 4.7, OpenAI GPT-5.5, Gemini 3 Pro Preview, and GPT-5.3-Codex.
