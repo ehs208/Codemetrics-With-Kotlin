@@ -556,7 +556,7 @@ public class CodexOAuthProvider implements AiRefactoringProvider {
     }
 
     private void addCodexReasoning(JsonObject body, AiRefactoringConfiguration config) {
-        String effort = normalizeCodexReasoningEffort(config.reasoningEffort);
+        String effort = normalizeCodexReasoningEffort(config.codexModel, config.reasoningEffort);
         if (effort == null) {
             return;
         }
@@ -566,11 +566,19 @@ public class CodexOAuthProvider implements AiRefactoringProvider {
         body.add("reasoning", reasoning);
     }
 
-    private String normalizeCodexReasoningEffort(String effort) {
+    private String normalizeCodexReasoningEffort(String model, String effort) {
         if (effort == null || effort.isEmpty() || "none".equals(effort)) {
             return null;
         }
-        return "minimal".equals(effort) ? "low" : effort;
+        if ("minimal".equals(effort)) {
+            return "low";
+        }
+        // Only GPT-6 and GPT-5.6 models accept max; older Codex models top out at xhigh.
+        boolean supportsMax = model != null && (model.startsWith("gpt-6") || model.startsWith("gpt-5.6"));
+        if ("max".equals(effort) && !supportsMax) {
+            return "xhigh";
+        }
+        return effort;
     }
 
     // ---- SSE Response Parsing ----

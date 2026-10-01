@@ -204,7 +204,17 @@ public class GeminiProvider implements AiRefactoringProvider {
                 return "high";
             }
         }
+        if ("minimal".equals(thinkingLevel) && !supportsMinimalThinking(model)) {
+            return "low";
+        }
         return thinkingLevel;
+    }
+
+    /** Gemini 3.x Pro models and Gemini 3.7+ Flash only accept low/medium/high. */
+    private boolean supportsMinimalThinking(String model) {
+        return !model.matches("gemini-3(\\.\\d+)?-pro.*")
+            && !model.startsWith("gemini-3.7")
+            && !model.startsWith("gemini-3.8");
     }
 
     private AiRefactoringResponse parseResponse(String responseBody) {

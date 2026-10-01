@@ -170,22 +170,35 @@ public class OpenAiProvider implements AiRefactoringProvider {
             return null;
         }
 
-        if (isProReasoningModel(model)) {
-            if ("none".equals(effort) || "minimal".equals(effort) || "low".equals(effort)) {
-                return "medium";
+        if (supportsMaxReasoning(model)) {
+            if ("minimal".equals(effort)) {
+                return "low";
+            }
+            if ("none".equals(effort) && !supportsNoneWithMaxReasoning(model)) {
+                return "low";
             }
             return effort;
         }
 
+        if (isProReasoningModel(model)) {
+            if ("none".equals(effort) || "minimal".equals(effort) || "low".equals(effort)) {
+                return "medium";
+            }
+            return "max".equals(effort) ? "xhigh" : effort;
+        }
+
         if (supportsNoneAndXHighReasoning(model)) {
-            return "minimal".equals(effort) ? "low" : effort;
+            if ("minimal".equals(effort)) {
+                return "low";
+            }
+            return "max".equals(effort) ? "xhigh" : effort;
         }
 
         if (supportsNoneReasoning(model)) {
             if ("minimal".equals(effort)) {
                 return "low";
             }
-            if ("xhigh".equals(effort)) {
+            if ("xhigh".equals(effort) || "max".equals(effort)) {
                 return "high";
             }
             return effort;
@@ -195,7 +208,7 @@ public class OpenAiProvider implements AiRefactoringProvider {
             if ("none".equals(effort) || "minimal".equals(effort)) {
                 return "low";
             }
-            if ("xhigh".equals(effort)) {
+            if ("xhigh".equals(effort) || "max".equals(effort)) {
                 return "high";
             }
             return effort;
@@ -204,14 +217,24 @@ public class OpenAiProvider implements AiRefactoringProvider {
         if ("none".equals(effort)) {
             return "minimal";
         }
-        if ("xhigh".equals(effort)) {
+        if ("xhigh".equals(effort) || "max".equals(effort)) {
             return "high";
         }
         return effort;
     }
 
     private boolean supportsReasoning(String model) {
-        return model != null && (model.startsWith("gpt-5") || model.startsWith("o"));
+        return model != null && (model.startsWith("gpt-6") || model.startsWith("gpt-5") || model.startsWith("o"));
+    }
+
+    /** GPT-6 and GPT-5.6 models accept efforts up to max, but never minimal. */
+    private boolean supportsMaxReasoning(String model) {
+        return model != null && (model.startsWith("gpt-6") || model.startsWith("gpt-5.6"));
+    }
+
+    /** GPT-6 Astra and GPT-6.1 Sol reject none with HTTP 400; Luna and GPT-5.6 accept it. */
+    private boolean supportsNoneWithMaxReasoning(String model) {
+        return model.startsWith("gpt-5.6") || model.startsWith("gpt-6-luna");
     }
 
     private boolean isProReasoningModel(String model) {
@@ -256,7 +279,7 @@ public class OpenAiProvider implements AiRefactoringProvider {
     }
 
     private boolean supportsTextVerbosity(String model) {
-        return model != null && model.startsWith("gpt-5");
+        return model != null && (model.startsWith("gpt-6") || model.startsWith("gpt-5"));
     }
 
     private AiRefactoringResponse parseResponse(String responseBody) {

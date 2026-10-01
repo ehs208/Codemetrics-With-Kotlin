@@ -74,7 +74,7 @@ public class ClaudeProvider implements AiRefactoringProvider {
                     .header("x-api-key", apiKey)
                     .header("anthropic-version", ANTHROPIC_VERSION)
                     .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                    .timeout(Duration.ofSeconds(120))
+                    .timeout(Duration.ofSeconds(300))
                     .build();
 
                 HttpResponse<String> response = httpClient.send(httpRequest,
@@ -176,21 +176,29 @@ public class ClaudeProvider implements AiRefactoringProvider {
             return null;
         }
 
-        boolean opus48 = model.startsWith("claude-opus-4-8");
-        boolean opus47 = model.startsWith("claude-opus-4-7");
+        // Fable, Mythos 5.x, Opus 5.x, Sonnet 5.x, Opus 4.8 and Opus 4.7 accept every level (low..max).
+        boolean fullRange = model.startsWith("claude-fable-")
+            || (model.startsWith("claude-mythos-") && !model.startsWith("claude-mythos-preview"))
+            || model.startsWith("claude-opus-5")
+            || model.startsWith("claude-sonnet-5")
+            || model.startsWith("claude-opus-4-8")
+            || model.startsWith("claude-opus-4-7");
         boolean opus46 = model.startsWith("claude-opus-4-6");
         boolean sonnet46 = model.startsWith("claude-sonnet-4-6");
         boolean opus45 = model.startsWith("claude-opus-4-5");
-        boolean mythos = model.startsWith("claude-mythos-preview");
+        boolean mythosPreview = model.startsWith("claude-mythos-preview");
 
-        if (!(opus48 || opus47 || opus46 || sonnet46 || opus45 || mythos)) {
+        if (fullRange) {
+            return effort;
+        }
+        if (!(opus46 || sonnet46 || opus45 || mythosPreview)) {
             return null;
         }
 
-        if ("xhigh".equals(effort) && !(opus48 || opus47)) {
+        if ("xhigh".equals(effort)) {
             return "high";
         }
-        if ("max".equals(effort) && !(opus48 || opus47 || opus46 || sonnet46 || mythos)) {
+        if ("max".equals(effort) && opus45) {
             return "high";
         }
         return effort;
@@ -199,6 +207,14 @@ public class ClaudeProvider implements AiRefactoringProvider {
     private AiRefactoringResponse parseResponse(String responseBody) {
         JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
         JsonArray content = json.getAsJsonArray("content");
+        String stopReason = json.has("stop_reason") && !json.get("stop_reason").isJsonNull()
+            ? json.get("stop_reason").getAsString()
+            : "";
+
+        if ("refusal".equals(stopReason)) {
+            throw new RuntimeException("Claude declined this request (stop_reason: refusal). "
+                + "Try again or switch to a different Claude model.");
+        }
 
         if (content == null || content.isEmpty()) {
             throw new RuntimeException("No content in Claude response");
@@ -213,6 +229,10 @@ public class ClaudeProvider implements AiRefactoringProvider {
         }
 
         String text = fullText.toString();
+        if (text.isBlank() && "max_tokens".equals(stopReason)) {
+            throw new RuntimeException("Claude used the whole output budget before answering. "
+                + "Increase Max Output Tokens or lower Claude Effort in Settings.");
+        }
         String suggestedCode = ResponseParsingUtils.extractCodeBlock(text);
         String explanation = ResponseParsingUtils.extractExplanation(text);
 
@@ -237,15 +257,24 @@ public class ClaudeProvider implements AiRefactoringProvider {
 
         double inputPerMillion;
         double outputPerMillion;
-        if (model.startsWith("claude-haiku")) {
-            inputPerMillion = 1.0;
-            outputPerMillion = 5.0;
-        } else if (model.startsWith("claude-sonnet")) {
-            inputPerMillion = 3.0;
-            outputPerMillion = 15.0;
+        if (model.startsWith("claude-fable") || model.startsWith("claude-mythos-5")) {
+            inputPerMillion = 10.0;
+            outputPerMillion = 50.0;
+        } else if (model.startsWith("claude-opus-5-5")) {
+            inputPerMillion = 4.0;
+            outputPerMillion = 20.0;
         } else if (model.startsWith("claude-opus")) {
             inputPerMillion = 5.0;
             outputPerMillion = 25.0;
+        } else if (model.startsWith("claude-sonnet-5")) {
+            inputPerMillion = 2.0;
+            outputPerMillion = 10.0;
+        } else if (model.startsWith("claude-sonnet")) {
+            inputPerMillion = 3.0;
+            outputPerMillion = 15.0;
+        } else if (model.startsWith("claude-haiku")) {
+            inputPerMillion = 1.0;
+            outputPerMillion = 5.0;
         } else {
             return 0.0;
         }
