@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Changed
+- Update default AI models to the current lineups: Claude `claude-opus-5-5`, OpenAI `gpt-6.1-sol`, Gemini `gemini-3.8-flash`, and Codex `gpt-6.1-sol`.
+- Add Claude Opus 5.5, Sonnet 5.5, Fable 5.1, and Opus 5; OpenAI GPT-6.1 Sol, GPT-6 Astra, GPT-6 Luna, GPT-5.6 Sol, and GPT-5.6 Terra; and Gemini 3.8 / 3.7 / 3.6 Flash and 3.5 Flash-Lite to the model dropdowns. Remove older models from the dropdowns (Claude 4.7 and earlier except Haiku 4.5, GPT-5.4 and earlier, Gemini 3 Flash Preview and 2.5, and pre-GPT-6 Codex models). The dropdowns stay editable, so a saved older model keeps working.
+- Add the `max` reasoning effort for GPT-6 and GPT-5.6 models (normalized to `xhigh`/`high` on older models).
+- Raise the default Max Output Tokens to 16000 and the Claude request timeout to 300 seconds, since current Claude models always think before answering.
+- Show the current Claude prices in the cost estimate (Opus 5.5, Sonnet 5.x, Fable).
+
+### Fixed
+- Apply Claude effort to Claude 5-generation models (Opus 5.5, Opus 5, Sonnet 5.5, Sonnet 5, Fable); `claude-sonnet-5` previously ignored the effort setting.
+- Stop sending `minimal` thinking to Gemini 3.1 Pro and Gemini 3.7+ Flash, which reject it; it is now sent as `low`.
+- Stop sending `none` reasoning effort to GPT-6 Astra and GPT-6.1 Sol, which return HTTP 400 for it.
+- Move Codex users off models retired from ChatGPT sign-in (`gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex-spark`) to `gpt-6.1-sol`.
+- Show a clear error when Claude declines a request or uses the whole output budget before answering.
 
 ## [0.3.3] - 2026-07-06
 ### Fixed

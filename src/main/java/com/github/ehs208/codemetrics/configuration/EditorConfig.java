@@ -1269,7 +1269,7 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         v -> aiConfig.setApiKey("Claude", v),
         "Claude API Key"));
     comboBox(aiFields, () -> aiConfig.claudeModel, v -> aiConfig.claudeModel = v,
-        "Claude Model", new String[]{"claude-opus-4-8", "claude-sonnet-5", "claude-opus-4-7", "claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5", "claude-haiku-4-5-20251001", "claude-opus-4-5", "claude-opus-4-5-20251101", "claude-sonnet-4-5", "claude-sonnet-4-5-20250929"});
+        "Claude Model", new String[]{"claude-opus-5-5", "claude-sonnet-5-5", "claude-fable-5-1", "claude-opus-5", "claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5"});
     comboBox(aiFields, () -> aiConfig.claudeEffort, v -> aiConfig.claudeEffort = v,
         "Claude Effort", new String[]{"default", "low", "medium", "high", "xhigh", "max"});
 
@@ -1279,9 +1279,9 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         v -> aiConfig.setApiKey("OpenAI", v),
         "OpenAI API Key"));
     comboBox(aiFields, () -> aiConfig.openaiModel, v -> aiConfig.openaiModel = v,
-        "OpenAI Model", new String[]{"gpt-5.5", "gpt-5.5-pro", "gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.2", "gpt-5.2-pro", "gpt-5.1", "gpt-5-mini", "gpt-5-nano", "gpt-5", "gpt-4.1"});
+        "OpenAI Model", new String[]{"gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.5", "gpt-5.5-pro"});
     comboBox(aiFields, () -> aiConfig.openAiTextVerbosity, v -> aiConfig.openAiTextVerbosity = v,
-        "OpenAI Text Verbosity (GPT-5 models)", new String[]{"low", "medium", "high"});
+        "OpenAI Text Verbosity (GPT-5/GPT-6 models)", new String[]{"low", "medium", "high"});
 
     // Gemini config
     aiFields.add(new ApiKeyField(
@@ -1289,17 +1289,17 @@ public class EditorConfig implements Configurable, Configurable.NoScroll {
         v -> aiConfig.setApiKey("Gemini", v),
         "Gemini API Key"));
     comboBox(aiFields, () -> aiConfig.geminiModel, v -> aiConfig.geminiModel = v,
-        "Gemini Model", new String[]{"gemini-3.5-flash", "gemini-3.1-pro-preview", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"});
+        "Gemini Model", new String[]{"gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview", "gemini-3.1-flash-lite"});
     comboBox(aiFields, () -> aiConfig.geminiThinkingLevel, v -> aiConfig.geminiThinkingLevel = v,
-        "Gemini Thinking Level (Gemini 3; Pro supports low/high)", new String[]{"default", "minimal", "low", "medium", "high"});
+        "Gemini Thinking Level (Gemini 3; normalized per model)", new String[]{"default", "minimal", "low", "medium", "high"});
 
     // Codex config
     comboBox(aiFields, () -> aiConfig.codexModel, v -> aiConfig.codexModel = v,
-        "Codex Model", new String[]{"gpt-5.3-codex", "gpt-5.3-codex-spark", "gpt-5.5", "gpt-5.4", "gpt-5.4-mini", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1-codex", "gpt-5.1", "gpt-5-codex", "gpt-5-codex-mini", "gpt-5"});
+        "Codex Model", new String[]{"gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna"});
 
     // Behavior settings
     comboBox(aiFields, () -> aiConfig.reasoningEffort, v -> aiConfig.reasoningEffort = v,
-        "Reasoning Effort (OpenAI/Codex; normalized)", new String[]{"none", "minimal", "low", "medium", "high", "xhigh"});
+        "Reasoning Effort (OpenAI/Codex; normalized)", new String[]{"none", "minimal", "low", "medium", "high", "xhigh", "max"});
     numeric(aiFields, () -> aiConfig.maxTokens, v -> aiConfig.maxTokens = v, "Max Output Tokens");
     checkBox(aiFields, () -> aiConfig.includeClassContext, v -> aiConfig.includeClassContext = v,
         "Include class context in prompt");

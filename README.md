@@ -46,13 +46,13 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
   - Codex uses ChatGPT OAuth login; stored OAuth tokens are kept in IntelliJ PasswordSafe.
     If browser automation is unavailable, the OAuth flow prompts for the callback URL.
 - **Model**: Select model per provider (editable dropdown with current defaults)
-  - Claude defaults to `claude-opus-4-8`; OpenAI defaults to `gpt-5.5`; Gemini defaults to `gemini-3.5-flash`; Codex defaults to `gpt-5.3-codex`.
+  - Claude defaults to `claude-opus-5-5`; OpenAI defaults to `gpt-6.1-sol`; Gemini defaults to `gemini-3.8-flash`; Codex defaults to `gpt-6.1-sol`.
 - **Custom Prompt**: Add custom instructions appended to the auto-generated prompt
 - **Provider parameters**:
-  - OpenAI / Codex reasoning effort: none / minimal / low / medium / high / xhigh (unsupported levels are omitted or normalized per selected model)
-  - OpenAI text verbosity for GPT-5 models: low / medium / high
+  - OpenAI / Codex reasoning effort: none / minimal / low / medium / high / xhigh / max (unsupported levels are omitted or normalized per selected model)
+  - OpenAI text verbosity for GPT-5 / GPT-6 models: low / medium / high
   - Claude effort: default / low / medium / high / xhigh / max
-  - Gemini thinking level for Gemini 3 models: default / minimal / low / medium / high (Gemini 3 Pro sends low/high only; unsupported lower levels are normalized)
+  - Gemini thinking level for Gemini 3 models: default / minimal / low / medium / high (levels a model does not support, such as `minimal` on Gemini 3.1 Pro or Gemini 3.7+ Flash, are normalized)
 
 ## Usage
 1. **Inline Hints**: Complexity scores appear as inlay hints next to methods and classes

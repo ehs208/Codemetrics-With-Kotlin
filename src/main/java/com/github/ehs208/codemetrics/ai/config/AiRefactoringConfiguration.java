@@ -18,12 +18,12 @@ import org.jetbrains.annotations.Nullable;
 public class AiRefactoringConfiguration implements PersistentStateComponent<AiRefactoringConfiguration> {
 
     public String activeProviderId = "Claude";
-    public String claudeModel = "claude-opus-4-8";
-    public int maxTokens = 8192;
+    public String claudeModel = "claude-opus-5-5";
+    public int maxTokens = 16000;
     public boolean includeClassContext = true;
-    public String openaiModel = "gpt-5.5";
-    public String geminiModel = "gemini-3.5-flash";
-    public String codexModel = "gpt-5.3-codex";
+    public String openaiModel = "gpt-6.1-sol";
+    public String geminiModel = "gemini-3.8-flash";
+    public String codexModel = "gpt-6.1-sol";
     public String reasoningEffort = "medium";
     public String claudeEffort = "high";
     public String geminiThinkingLevel = "high";
@@ -56,12 +56,20 @@ public class AiRefactoringConfiguration implements PersistentStateComponent<AiRe
      * Move persisted settings off models that providers have retired, so existing
      * users are not stuck sending requests that always fail.
      * Gemini 3 Pro Preview was shut down (2026-03-09).
+     * Codex (ChatGPT sign-in) retired GPT-5.4 / GPT-5.4-mini (2026-08-31) and
+     * GPT-5.3-Codex-Spark (2026-09-14), and retires GPT-5.5 on 2026-10-14.
      */
     private void migrateRetiredModels() {
         if ("gemini-3-pro-preview".equals(geminiModel)) {
-            geminiModel = "gemini-3.5-flash";
+            geminiModel = "gemini-3.8-flash";
+        }
+        if (RETIRED_CODEX_MODELS.contains(codexModel)) {
+            codexModel = "gpt-6.1-sol";
         }
     }
+
+    private static final java.util.Set<String> RETIRED_CODEX_MODELS = java.util.Set.of(
+        "gpt-5.5", "gpt-5.4", "gpt-5.4-mini", "gpt-5.3-codex-spark");
 
     public void setApiKey(String providerId, String apiKey) {
         CredentialAttributes attributes = createCredentialAttributes(providerId);
