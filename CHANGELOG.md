@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+## [0.3.4] - 2026-10-01
 ### Changed
 - Update default AI models to the current lineups: Claude `claude-opus-5-5`, OpenAI `gpt-6.1-sol`, Gemini `gemini-3.8-flash`, and Codex `gpt-6.1-sol`.
 - Add Claude Opus 5.5, Sonnet 5.5, Fable 5.1, and Opus 5; OpenAI GPT-6.1 Sol, GPT-6 Astra, GPT-6 Luna, GPT-5.6 Sol, and GPT-5.6 Terra; and Gemini 3.8 / 3.7 / 3.6 Flash and 3.5 Flash-Lite to the model dropdowns. Remove older models from the dropdowns (Claude 4.7 and earlier except Haiku 4.5, GPT-5.4 and earlier, Gemini 3 Flash Preview and 2.5, and pre-GPT-6 Codex models). The dropdowns stay editable, so a saved older model keeps working.
