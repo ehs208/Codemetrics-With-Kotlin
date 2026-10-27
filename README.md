@@ -71,7 +71,7 @@ The plugin calculates cyclomatic complexity by parsing the AST and walking throu
 
 ## Test Samples
 
-The [`complexity-test-samples/`](complexity-test-samples/) directory is a standalone Gradle project with comprehensive test cases:
+The [`complexity-test-samples/`](https://github.com/ehs208/Codemetrics-With-Kotlin/tree/main/complexity-test-samples) directory is a standalone Gradle project with comprehensive test cases:
 
 - **Java**: Simple to extreme complexity (1-25+), lambda expressions, anonymous classes, nested conditions
 - **Kotlin**: when/if/for/while/try expressions, Elvis operator, properties, sealed classes
@@ -80,7 +80,7 @@ Open `complexity-test-samples` as a separate project in IntelliJ IDEA to test th
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](https://github.com/ehs208/Codemetrics-With-Kotlin/blob/main/CONTRIBUTING.md) for guidelines.
 
 ### For Contributors
 
@@ -95,10 +95,10 @@ cd codemetrics-idea
 ./gradlew runIde
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions and development tips.
+See [CONTRIBUTING.md](https://github.com/ehs208/Codemetrics-With-Kotlin/blob/main/CONTRIBUTING.md) for full setup instructions and development tips.
 
 ## License
-Licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](https://github.com/ehs208/Codemetrics-With-Kotlin/blob/main/LICENSE).
 <!-- Plugin description end -->
 
 ---
