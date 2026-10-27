@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-10-27
+### Fixed
+- Fix broken links in the Marketplace plugin description (test samples, contributing guide, and license now point to GitHub).
+
 ## [0.3.4] - 2026-10-01
 ### Changed
 - Update default AI models to the current lineups: Claude `claude-opus-5-5`, OpenAI `gpt-6.1-sol`, Gemini `gemini-3.8-flash`, and Codex `gpt-6.1-sol`.
